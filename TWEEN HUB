@@ -135,7 +135,7 @@ local function createToggleGUI()
     end
     
     gui = Instance.new("ScreenGui")
-    gui.Name = "TeleportToggleGUI"
+    gui.Name = "TeleportbyZuxxy"
     gui.ResetOnSpawn = false
     gui.Parent = playerGui
     
