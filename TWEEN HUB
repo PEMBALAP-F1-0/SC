@@ -1,0 +1,262 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Konfigurasi
+local TELEPORT_DISTANCE_THRESHOLD = 155
+local TELEPORT_COOLDOWN = 0
+local TWEEN_DURATION = 0.1 -- Durasi lebih pendek untuk animasi cepat
+local TOGGLE_KEY = Enum.KeyCode.T
+local LOCK_DISTANCE = 3
+
+-- Variabel state
+local isTeleportEnabled = true
+local isTeleporting = false
+local targetPlayer = nil
+local gui = nil
+local connection = nil
+
+-- Fungsi untuk mendapatkan pemain terdekat
+local function getNearestPlayer()
+    local nearestPlayer = nil
+    local nearestDistance = math.huge
+    
+    for _, otherPlayer in ipairs(Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character then
+            local otherCharacter = otherPlayer.Character
+            local otherRoot = otherCharacter:FindFirstChild("HumanoidRootPart")
+            
+            if otherRoot and otherCharacter:FindFirstChildOfClass("Humanoid").Health > 0 then
+                local distance = (humanoidRootPart.Position - otherRoot.Position).Magnitude
+                if distance < nearestDistance then
+                    nearestDistance = distance
+                    nearestPlayer = otherPlayer
+                end
+            end
+        end
+    end
+    
+    return nearestPlayer, nearestDistance
+end
+
+-- Fungsi untuk mengunci posisi ke target
+local function lockToTarget(targetRootPart)
+    if not targetRootPart or not humanoidRootPart then return end
+    
+    while isTeleportEnabled and targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") do
+        local targetPos = targetPlayer.Character.HumanoidRootPart.Position
+        local distance = (targetPos - humanoidRootPart.Position).Magnitude
+        
+        if distance > LOCK_DISTANCE then
+            -- Teleport cepat tapi dengan tween
+            local tween = TweenService:Create(humanoidRootPart, TweenInfo.new(
+                0.2, -- Durasi sangat pendek
+                Enum.EasingStyle.Linear,
+                Enum.EasingDirection.Out
+            ), {
+                CFrame = CFrame.new(targetPos + Vector3.new(0, 0.5, 0))
+            })
+            tween:Play()
+        end
+        
+        RunService.Heartbeat:Wait()
+    end
+end
+
+-- Fungsi untuk teleport dengan animasi tween cepat
+local function quickTweenTeleport(targetRootPart)
+    if not targetRootPart or not humanoidRootPart or isTeleporting then return end
+    
+    isTeleporting = true
+    
+    -- Efek sebelum teleport (cepat)
+    local startSize = humanoidRootPart.Size
+    local tweenShrink = TweenService:Create(humanoidRootPart, TweenInfo.new(
+        TWEEN_DURATION/2,
+        Enum.EasingStyle.Back,
+        Enum.EasingDirection.In
+    ), {
+        Size = Vector3.new(0.5, 0.5, 0.5)
+    })
+    tweenShrink:Play()
+    
+    -- Partikel efek
+    local sparkles = Instance.new("ParticleEmitter")
+    sparkles.LightEmission = 0.8
+    sparkles.Texture = "rbxassetid://242487987"
+    sparkles.Size = NumberSequence.new(0.5)
+    sparkles.Lifetime = NumberRange.new(0.3)
+    sparkles.Speed = NumberRange.new(5)
+    sparkles.EmissionDirection = Enum.NormalId.Top
+    sparkles.Parent = humanoidRootPart
+    
+    tweenShrink.Completed:Connect(function()
+        -- Pindahkan posisi
+        humanoidRootPart.CFrame = targetRootPart.CFrame + Vector3.new(0, 3, 0)
+        
+        -- Efek setelah teleport (kembali ke normal dengan cepat)
+        local tweenGrow = TweenService:Create(humanoidRootPart, TweenInfo.new(
+            TWEEN_DURATION/2,
+            Enum.EasingStyle.Elastic,
+            Enum.EasingDirection.Out
+        ), {
+            Size = startSize
+        })
+        tweenGrow:Play()
+        
+        -- Hapus partikel setelah selesai
+        delay(0.5, function()
+            sparkles:Destroy()
+        end)
+        
+        -- Kunci ke target
+        spawn(function()
+            lockToTarget(targetRootPart)
+        end)
+        
+        isTeleporting = false
+    end)
+end
+
+-- Fungsi untuk membuat GUI toggle
+local function createToggleGUI()
+    local playerGui = player:WaitForChild("PlayerGui")
+    
+    if gui and gui.Parent then
+        gui:Destroy()
+        gui = nil
+        return
+    end
+    
+    gui = Instance.new("ScreenGui")
+    gui.Name = "TeleportToggleGUI"
+    gui.ResetOnSpawn = false
+    gui.Parent = playerGui
+    
+    -- Frame utama
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 250, 0, 120)
+    frame.Position = UDim2.new(0.5, -125, 0.5, -60)
+    frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    frame.BorderSizePixel = 0
+    frame.Parent = gui
+    
+    -- Judul
+    local title = Instance.new("TextLabel")
+    title.Text = "TELEPORT CEPAT"
+    title.Size = UDim2.new(1, 0, 0, 30)
+    title.Position = UDim2.new(0, 0, 0, 0)
+    title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    title.Font = Enum.Font.SourceSansBold
+    title.TextSize = 18
+    title.Parent = frame
+    
+    -- Status
+    local statusLabel = Instance.new("TextLabel")
+    statusLabel.Text = "Status: " .. (isTeleportEnabled and "AKTIF" or "NONAKTIF")
+    statusLabel.Size = UDim2.new(1, 0, 0, 20)
+    statusLabel.Position = UDim2.new(0, 0, 0.3, 0)
+    statusLabel.BackgroundTransparency = 1
+    statusLabel.TextColor3 = isTeleportEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    statusLabel.Font = Enum.Font.SourceSansBold
+    statusLabel.TextSize = 16
+    statusLabel.Parent = frame
+    
+    -- Tombol toggle
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Text = isTeleportEnabled and "NONAKTIFKAN" or "AKTIFKAN"
+    toggleButton.Size = UDim2.new(0.8, 0, 0, 40)
+    toggleButton.Position = UDim2.new(0.1, 0, 0.5, 0)
+    toggleButton.BackgroundColor3 = isTeleportEnabled and Color3.fromRGB(200, 60, 60) or Color3.fromRGB(60, 200, 60)
+    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleButton.Font = Enum.Font.SourceSansBold
+    toggleButton.TextSize = 16
+    toggleButton.Parent = frame
+    
+    toggleButton.MouseButton1Click:Connect(function()
+        isTeleportEnabled = not isTeleportEnabled
+        toggleButton.Text = isTeleportEnabled and "NONAKTIFKAN" or "AKTIFKAN"
+        toggleButton.BackgroundColor3 = isTeleportEnabled and Color3.fromRGB(200, 60, 60) or Color3.fromRGB(60, 200, 60)
+        statusLabel.Text = "Status: " .. (isTeleportEnabled and "AKTIF" or "NONAKTIF")
+        statusLabel.TextColor3 = isTeleportEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+        
+        if not isTeleportEnabled then
+            targetPlayer = nil
+        end
+    end)
+    
+    -- Petunjuk
+    local hint = Instance.new("TextLabel")
+    hint.Text = "Tekan "..tostring(TOGGLE_KEY):gsub("Enum.KeyCode.", "").." untuk tutup menu"
+    hint.Size = UDim2.new(1, 0, 0, 20)
+    hint.Position = UDim2.new(0, 0, 0.85, 0)
+    hint.BackgroundTransparency = 1
+    hint.TextColor3 = Color3.fromRGB(180, 180, 180)
+    hint.Font = Enum.Font.SourceSans
+    hint.TextSize = 14
+    hint.Parent = frame
+end
+
+-- Handle input keyboard
+local function onInputBegan(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == TOGGLE_KEY then
+        createToggleGUI()
+    end
+end
+
+-- Handle karakter yang mati/direspawn
+local function onCharacterAdded(newCharacter)
+    character = newCharacter
+    humanoid = character:WaitForChild("Humanoid")
+    humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    targetPlayer = nil
+end
+
+-- Inisialisasi
+local function initialize()
+    UserInputService.InputBegan:Connect(onInputBegan)
+    player.CharacterAdded:Connect(onCharacterAdded)
+    
+    createToggleGUI()
+    
+    connection = RunService.Heartbeat:Connect(function()
+        if not isTeleportEnabled or not character or not humanoidRootPart or isTeleporting then return end
+        
+        local nearestPlayer, distance = getNearestPlayer()
+        
+        if nearestPlayer and distance <= TELEPORT_DISTANCE_THRESHOLD then
+            local targetRootPart = nearestPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if targetRootPart and nearestPlayer ~= targetPlayer then
+                targetPlayer = nearestPlayer
+                quickTweenTeleport(targetRootPart)
+            end
+        end
+    end)
+end
+
+-- Mulai script
+if player then
+    initialize()
+else
+    warn("Player tidak ditemukan, pastikan script di LocalScript")
+end
+
+-- Pembersihan
+script.Destroying:Connect(function()
+    if connection then
+        connection:Disconnect()
+    end
+    if gui then
+        gui:Destroy()
+    end
+end)
