@@ -1,0 +1,199 @@
+-- Roblox Teleport to Nearest Player Script with Persistent Toggle and Target Lock
+local Player = game:GetService("Players").LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+local MAX_DISTANCE = 155 -- Jarak maksimum untuk mencari pemain terdekat (dalam studs)
+local CLOSENESS_OFFSET = 0.1 -- Jarak penempelan sangat dekat
+local UPDATE_INTERVAL = 0.2 -- Interval update target (detik)
+local TARGET_LOCK_DURATION = 0.5 -- Durasi lock target sebelum mencari yang baru jika target statis (detik)
+
+local isTrackingEnabled = false
+local lockedTargetPlayer = nil -- Changed to lockedTargetPlayer for clarity
+local connection = nil
+local lastTargetCheck = 0
+local lastTargetPosition = Vector3.new(0,0,0)
+local lastTargetLockTime = 0
+
+-- Fungsi untuk mencari pemain terdekat yang terus diperbarui
+local function findNearestPlayer()
+    local nearestPlayer = nil
+    local shortestDistance = math.huge
+    
+    for _, otherPlayer in ipairs(game:GetService("Players"):GetPlayers()) do
+        if otherPlayer ~= Player and otherPlayer.Character and otherPlayer.Character.PrimaryPart and otherPlayer.Character:FindFirstChildOfClass("Humanoid") and otherPlayer.Character.Humanoid.Health > 0 then
+            local otherRoot = otherPlayer.Character.PrimaryPart
+            local distance = (HumanoidRootPart.Position - otherRoot.Position).Magnitude
+            
+            if distance < shortestDistance and distance <= MAX_DISTANCE then
+                shortestDistance = distance
+                nearestPlayer = otherPlayer
+            end
+        end
+    end
+    
+    return nearestPlayer, shortestDistance
+end
+
+-- Fungsi untuk menempel ke target
+local function stickToTarget()
+    if connection then 
+        connection:Disconnect() 
+        connection = nil
+    end
+    
+    connection = game:GetService("RunService").Heartbeat:Connect(function()
+        if not isTrackingEnabled then return end
+        
+        -- Periksa karakter pemain
+        if not Character or not Character.PrimaryPart or not Character:FindFirstChildOfClass("Humanoid") or Character.Humanoid.Health <= 0 then
+            -- Jika karakter mati, cari karakter baru
+            task.wait(2) -- Tunggu respawn
+            Character = Player.Character or Player.CharacterAdded:Wait()
+            HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+            return
+        end
+        
+        -- Perbarui target secara berkala atau jika target hilang/mati
+        local currentTime = os.clock()
+        if not lockedTargetPlayer or not lockedTargetPlayer.Character or not lockedTargetPlayer.Character.PrimaryPart or lockedTargetPlayer.Character.Humanoid.Health <= 0 then
+            -- Target hilang atau mati, cari yang baru
+            lockedTargetPlayer, distance = findNearestPlayer()
+            if lockedTargetPlayer then
+                print("New target locked:", lockedTargetPlayer.Name, "Distance:", math.floor(distance))
+                lastTargetLockTime = currentTime
+                lastTargetPosition = lockedTargetPlayer.Character.PrimaryPart.Position
+            end
+        elseif (currentTime - lastTargetCheck > UPDATE_INTERVAL) then
+            -- Periksa apakah ada target yang lebih dekat jika target saat ini tidak bergerak signifikan
+            local currentTargetPosition = lockedTargetPlayer.Character.PrimaryPart.Position
+            if (currentTargetPosition - lastTargetPosition).Magnitude < 1 then -- Jika target hampir statis
+                if (currentTime - lastTargetLockTime) > TARGET_LOCK_DURATION then
+                    local newTarget, newDistance = findNearestPlayer()
+                    if newTarget and newTarget ~= lockedTargetPlayer and newDistance < (HumanoidRootPart.Position - lockedTargetPlayer.Character.PrimaryPart.Position).Magnitude then
+                        print("Switched to closer target:", newTarget.Name, "Distance:", math.floor(newDistance))
+                        lockedTargetPlayer = newTarget
+                        lastTargetLockTime = currentTime
+                        lastTargetPosition = lockedTargetPlayer.Character.PrimaryPart.Position
+                    end
+                end
+            else
+                lastTargetLockTime = currentTime -- Reset lock time if target is moving
+                lastTargetPosition = currentTargetPosition
+            end
+            lastTargetCheck = currentTime
+        end
+
+        -- Jika ada target yang valid, tempel ke target
+        if lockedTargetPlayer and lockedTargetPlayer.Character and lockedTargetPlayer.Character.PrimaryPart then
+            local targetRoot = lockedTargetPlayer.Character.PrimaryPart
+            HumanoidRootPart.CFrame = targetRoot.CFrame * CFrame.new(0, 0, -CLOSENESS_OFFSET)
+            HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        end
+    end)
+end
+
+-- Fungsi untuk toggle fitur
+local function toggleTracking()
+    isTrackingEnabled = not isTrackingEnabled
+    
+    if isTrackingEnabled then
+        lockedTargetPlayer, distance = findNearestPlayer()
+        if lockedTargetPlayer then
+            print("Tracking enabled. Locked to player:", lockedTargetPlayer.Name, "Distance:", math.floor(distance))
+            lastTargetLockTime = os.clock()
+            lastTargetPosition = lockedTargetPlayer.Character.PrimaryPart.Position
+            stickToTarget()
+        else
+            print("Searching for nearby players within", MAX_DISTANCE, "studs...")
+            isTrackingEnabled = true -- Tetap aktif untuk mencari target
+            lastTargetCheck = os.clock() -- Ensure target search runs quickly on activation
+            stickToTarget()
+        end
+    else
+        print("Tracking disabled")
+        if connection then
+            connection:Disconnect()
+            connection = nil
+        end
+        lockedTargetPlayer = nil
+    end
+end
+
+-- Buat GUI yang tidak hilang saat karakter mati
+local function createPersistentGUI()
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "TeleportToggle"
+    ScreenGui.ResetOnSpawn = false -- Pertahankan GUI saat respawn
+    ScreenGui.Parent = Player:WaitForChild("PlayerGui")
+    
+    local TextButton = Instance.new("TextButton")
+    TextButton.Parent = ScreenGui
+    TextButton.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    TextButton.BorderSizePixel = 0
+    TextButton.Position = UDim2.new(0.5, -100, 0.1, 0)
+    TextButton.Size = UDim2.new(0, 200, 0, 50)
+    TextButton.Font = Enum.Font.SourceSansBold
+    TextButton.Text = "Toggle Teleport ("..MAX_DISTANCE.." studs)"
+    TextButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TextButton.TextSize = 14
+    TextButton.MouseButton1Click:Connect(toggleTracking)
+    
+    local TextLabel = Instance.new("TextLabel")
+    TextLabel.Parent = ScreenGui
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Position = UDim2.new(0.5, -100, 0.1, 50)
+    TextLabel.Size = UDim2.new(0, 200, 0, 30)
+    TextLabel.Font = Enum.Font.SourceSans
+    TextLabel.Text = "Status: Off"
+    TextLabel.TextColor3 = isTrackingEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 255, 255)
+    TextLabel.TextSize = 14
+    
+    -- Update UI secara real-time
+    game:GetService("RunService").Heartbeat:Connect(function()
+        if not isTrackingEnabled then
+            TextLabel.Text = "Status: Off"
+            TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+        else
+            if lockedTargetPlayer and lockedTargetPlayer.Character and lockedTargetPlayer.Character.PrimaryPart then
+                local distance = (HumanoidRootPart.Position - lockedTargetPlayer.Character.PrimaryPart.Position).Magnitude
+                TextLabel.Text = string.format("Tracking %s (%.1f studs)", lockedTargetPlayer.Name, distance)
+                TextLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+            else
+                TextLabel.Text = "Searching target..."
+                TextLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+            end
+        end
+    end)
+end
+
+-- Inisialisasi
+createPersistentGUI()
+
+-- Handle respawn
+Player.CharacterAdded:Connect(function(newCharacter)
+    Character = newCharacter
+    HumanoidRootPart = newCharacter:WaitForChild("HumanoidRootPart")
+    
+    -- Jika fitur aktif, lanjutkan tracking setelah respawn
+    if isTrackingEnabled then
+        task.wait(1) -- Beri waktu untuk respawn selesai
+        -- Attempt to re-lock the previous target if it still exists and is valid
+        if lockedTargetPlayer and lockedTargetPlayer.Character and lockedTargetPlayer.Character.Humanoid.Health > 0 then
+            print("Re-locking previous target after respawn:", lockedTargetPlayer.Name)
+            lastTargetLockTime = os.clock()
+            lastTargetPosition = lockedTargetPlayer.Character.PrimaryPart.Position
+        else
+            -- Otherwise, find a new target
+            lockedTargetPlayer, _ = findNearestPlayer()
+            if lockedTargetPlayer then
+                print("Found new target after respawn:", lockedTargetPlayer.Name)
+                lastTargetLockTime = os.clock()
+                lastTargetPosition = lockedTargetPlayer.Character.PrimaryPart.Position
+            end
+        end
+        stickToTarget()
+    end
+end)
+
+print("Enhanced Teleport to Nearest Player script initialized!")
