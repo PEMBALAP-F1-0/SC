@@ -1,0 +1,326 @@
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/memejames/elerium-v2-ui-library//main/Library", true))()
+
+local window = library:AddWindow("💠SCRIPT BY ZUXXY💠", {
+	main_color = Color3.fromRGB(41, 74, 122), -- Warna
+	min_size = Vector2.new(250, 346), -- Ukuran GUI
+	can_resize = false, -- true atau false
+})
+
+local features = window:AddTab("MAIN🏠") -- Nama tab
+features:Show() -- Menampilkan tab
+
+local switch = features:AddSwitch("TELEPORT NEAREST GUI", function(bool)
+  if bool == true then
+    -- KODE UNTUK MENGAKTIFKAN FITUR
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/PEMBALAP-F1-0/SC/refs/heads/main/TELEPORT%20HUB"))()
+  else
+    -- KODE UNTUK MENONAKTIFKAN FITUR
+    -- Skrip untuk menghilangkan GUI "TeleportToggle"
+    local Player = game:GetService("Players").LocalPlayer
+    local PlayerGui = Player:WaitForChild("PlayerGui")
+    
+    -- Tunggu sebentar untuk memastikan GUI sudah dimuat
+    task.wait(1) 
+    
+    -- Cari ScreenGui dengan nama "TeleportToggle"
+    local teleportGui = PlayerGui:FindFirstChild("TeleportToggle")
+    
+    -- Jika ditemukan, hancurkan (hapus)
+    if teleportGui then
+        teleportGui:Destroy()
+        print("GUI TeleportToggle telah dihapus.")
+    else
+        print("GUI TeleportToggle tidak ditemukan.")
+    end
+  end
+end)
+
+switch:Set(false)
+
+local switch = features:AddSwitch("CAM LOCK", function(bool)
+ if bool == true then
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+    local Mouse = game.Players.LocalPlayer:GetMouse()
+    local CamlockState = false
+    local Prediction = 0.1768521
+    local HorizontalPrediction = 0.111076110
+    local VerticalPrediction = 0.11034856
+    local XPrediction = 20
+    local YPrediction = 20
+    
+    local Players = game:GetService("Players")	
+    local LP = Players.LocalPlayer	
+    local Mouse = LP:GetMouse()	
+    
+    local Locked = true
+    
+    getgenv().Key = "q"
+    
+    function FindNearestEnemy()
+        local ClosestDistance, ClosestPlayer = math.huge, nil
+        local CenterPosition =
+            Vector2.new(
+            game:GetService("GuiService"):GetScreenResolution().X / 2,
+            game:GetService("GuiService"):GetScreenResolution().Y / 2
+        )
+    
+        for _, Player in ipairs(game:GetService("Players"):GetPlayers()) do
+            if Player ~= LocalPlayer then
+                local Character = Player.Character
+                if Character and Character:FindFirstChild("HumanoidRootPart") and Character.Humanoid.Health > 0 then
+                    local Position, IsVisibleOnViewport =
+                        game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(Character.HumanoidRootPart.Position)
+    
+                    if IsVisibleOnViewport then
+                        local Distance = (CenterPosition - Vector2.new(Position.X, Position.Y)).Magnitude
+                        if Distance < ClosestDistance then
+                            ClosestPlayer = Character.HumanoidRootPart
+                            ClosestDistance = Distance
+                        end
+                    end
+                end
+            end
+        end
+    
+        return ClosestPlayer
+    end
+    
+    local enemy = nil
+    -- Function to aim the camera at the nearest enemy's HumanoidRootPart
+    RunService.Heartbeat:Connect(
+        function()
+            if CamlockState == true then
+                if enemy then
+                    local camera = workspace.CurrentCamera
+                    camera.CFrame = CFrame.new(camera.CFrame.p, enemy.Position + enemy.Velocity * Prediction)
+                end
+            end
+        end
+    )
+    
+    Mouse.KeyDown:Connect(function(k)	
+        if k == getgenv().Key then	
+                Locked = not Locked	
+                if Locked then	
+                    enemy = FindNearestEnemy()
+                    CamlockState = true
+                 else	
+                    if enemy ~= nil then	
+                        enemy = nil	
+                        CamlockState = false
+                    end	
+                end	
+        end	
+    end)
+    
+    local Rushex = Instance.new("ScreenGui")
+    local Frame = Instance.new("Frame")
+    local UICorner = Instance.new("UICorner")
+    local Logo = Instance.new("ImageLabel")
+    local TextButton = Instance.new("TextButton")
+    local UICorner_2 = Instance.new("UICorner")
+    
+    --Properties:
+    
+    Rushex.Name = "CAMLOCK"
+    Rushex.Parent = game.CoreGui
+    Rushex.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    Frame.Parent = Rushex
+    Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)  -- Background set to white
+    Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Frame.BorderSizePixel = 0
+    Frame.Position = UDim2.new(0.133798108, 0, 0.20107238, 0)
+    Frame.Size = UDim2.new(0, 202, 0, 70)
+    Frame.Active = true
+    Frame.Draggable = true
+    
+    local function TopContainer()
+    	Frame.Position = UDim2.new(0.5, -Frame.AbsoluteSize.X / 2, 0, -Frame.AbsoluteSize.Y / 2)
+    end
+    
+    TopContainer()
+    Frame:GetPropertyChangedSignal("AbsoluteSize"):Connect(TopContainer)
+    
+    UICorner.Parent = Frame
+    
+    Logo.Name = "Logo"
+    Logo.Parent = Frame
+    Logo.BackgroundColor3 = Color3.fromRGB(100, 255, 100)
+    Logo.BackgroundTransparency = 3.000
+    Logo.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Logo.BorderSizePixel = 0
+    Logo.Position = UDim2.new(0.326732665, 0, 0, 0)
+    Logo.Size = UDim2.new(0, 70, 0, 70)
+    Logo.Image = "rbxassetid://830610397"
+    Logo.ImageTransparency = 0.300
+    
+    TextButton.Parent = Frame
+    TextButton.BackgroundColor3 = Color3.fromRGB(75, 80, 255)
+    TextButton.BackgroundTransparency = 5.000
+    TextButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    TextButton.BorderSizePixel = 0
+    TextButton.Position = UDim2.new(0.0792079195, 0, 0.18571429, 0)
+    TextButton.Size = UDim2.new(0, 170, 0, 44)
+    TextButton.Font = Enum.Font.SourceSansSemibold
+    TextButton.Text = "CAMLOCK"
+    TextButton.TextColor3 = Color3.fromRGB(0, 0, 0)  -- Text color changed to black
+    TextButton.TextScaled = true
+    TextButton.TextSize = 18.000
+    TextButton.TextWrapped = true
+    local state = true
+    TextButton.MouseButton1Click:Connect(
+        function()
+            state = not state
+            if not state then
+                TextButton.Text = "ON"
+                CamlockState = true
+                enemy = FindNearestEnemy()
+            else
+                TextButton.Text = "OFF"
+                CamlockState = false
+                enemy = nil
+            end
+        end
+    )
+    
+    -- Function to hide the loading screen after a certain duration
+    local function HideLoadingScreen()
+        LoadingScreen:Destroy()
+    end
+ else
+  local CoreGui = game:GetService("CoreGui")
+
+  local rushexGui = CoreGui:FindFirstChild("CAMLOCK")
+  
+  if rushexGui then
+      rushexGui:Destroy()
+      print("GUI 'Rushex' telah dihapus.")
+  else
+      print("GUI 'Rushex' tidak ditemukan.")
+    end
+  end
+end)
+switch:Set(false)
+
+local features = window:AddTab("PLAYER👤") -- Name of tab
+features:Show() -- shows the tab
+
+local dropdown = features:AddDropdown("SPEED HACK", function(text)
+	if text == "NORMAL" then
+	  local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    
+    humanoid.WalkSpeed = 16
+	elseif text == "115" then
+	  local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    
+    humanoid.WalkSpeed = 115
+	elseif text == "150" then
+	  local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    
+    humanoid.WalkSpeed = 150
+	elseif text == "225" then
+	  local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    
+    humanoid.WalkSpeed = 225
+	elseif text == "250" then
+	  local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    
+    humanoid.WalkSpeed = 250
+	elseif text == "300" then
+	  local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    
+    humanoid.WalkSpeed = 300
+	end
+end)
+local normal = dropdown:Add("NORMAL")  -- Options 
+local t115 = dropdown:Add("115")
+local t150 = dropdown:Add("150")
+local t225 = dropdown:Add("225")
+local t250 = dropdown:Add("250")
+local t300 = dropdown:Add("300")
+
+features:AddButton("TPTOOL",function()
+  local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+
+local tool = Instance.new("Tool")
+tool.Name = "Teleport Tool"
+tool.RequiresHandle = false
+tool.Parent = player.Backpack
+
+tool.Activated:Connect(function()
+    local character = player.Character
+    if character and mouse.Target then
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            local targetPosition = mouse.Hit.p
+            humanoidRootPart.CFrame = CFrame.new(targetPosition)
+        end
+    end
+end)
+end)
+
+features:AddButton("TWEENTOOL",function()
+  local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local isTeleporting = false
+
+local tool = Instance.new("Tool")
+tool.Name = "Teleport Tool"
+tool.RequiresHandle = false
+tool.Parent = player.Backpack
+
+tool.Activated:Connect(function()
+    if isTeleporting then return end -- Mencegah spam klik saat sedang teleport
+    
+    local character = player.Character
+    if character and mouse.Target then
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            isTeleporting = true
+            
+            local targetPosition = mouse.Hit.p
+            local startCFrame = humanoidRootPart.CFrame
+            local targetCFrame = CFrame.new(targetPosition)
+            local duration = 0.2 -- Durasi teleportasi dalam detik, bisa diubah
+            local startTime = tick()
+            
+            local connection
+            connection = game:GetService("RunService").RenderStepped:Connect(function()
+                local elapsedTime = tick() - startTime
+                local alpha = elapsedTime / duration
+                
+                if alpha >= 1 then
+                    humanoidRootPart.CFrame = targetCFrame
+                    isTeleporting = false
+                    connection:Disconnect()
+                    return
+                end
+                
+                humanoidRootPart.CFrame = startCFrame:Lerp(targetCFrame, alpha)
+            end)
+        end
+    end
+end)
+end)
