@@ -209,56 +209,236 @@ local features = window:AddTab("PLAYER👤") -- Name of tab
 features:Show() -- shows the tab
 
 local dropdown = features:AddDropdown("SPEED HACK", function(text)
-	if text == "NORMAL" then
-	  local Players = game:GetService("Players")
-    local player = Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoid = character:WaitForChild("Humanoid")
+	if text == "115" then
+	  local normal = 16
+local targetSpeed = 155
+
+local player = game:GetService("Players").LocalPlayer
+local humanoid
+
+local function setSpeed(character)
+    if not character then return end
     
-    humanoid.WalkSpeed = 16
-	elseif text == "115" then
-	  local Players = game:GetService("Players")
-    local player = Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoid = character:WaitForChild("Humanoid")
+    -- Menunggu Humanoid dimuat untuk memastikan script tidak error
+    humanoid = character:WaitForChild("Humanoid", 5) 
     
-    humanoid.WalkSpeed = 115
+    if humanoid and humanoid:IsA("Humanoid") then
+        -- Menghindari pengulangan koneksi
+        if not humanoid:FindFirstChild("SpeedChanged") then
+            local speedChanged = Instance.new("BoolValue", humanoid)
+            speedChanged.Name = "SpeedChanged"
+            
+            humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                if humanoid.WalkSpeed ~= targetSpeed then
+                    humanoid.WalkSpeed = targetSpeed
+                end
+            end)
+        end
+        
+        humanoid.WalkSpeed = targetSpeed
+    end
+end
+
+-- Menerapkan speed saat karakter baru muncul (setelah respawn)
+player.CharacterAdded:Connect(setSpeed)
+
+-- Menerapkan speed pada karakter yang sudah ada saat script dijalankan
+if player.Character then
+    setSpeed(player.Character)
+end
 	elseif text == "150" then
-	  local Players = game:GetService("Players")
-    local player = Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoid = character:WaitForChild("Humanoid")
+	  local normal = 16
+local targetSpeed = 150
+
+local player = game:GetService("Players").LocalPlayer
+local humanoid
+
+local function setSpeed(character)
+    if not character then return end
     
-    humanoid.WalkSpeed = 150
+    -- Menunggu Humanoid dimuat untuk memastikan script tidak error
+    humanoid = character:WaitForChild("Humanoid", 5) 
+    
+    if humanoid and humanoid:IsA("Humanoid") then
+        -- Menghindari pengulangan koneksi
+        if not humanoid:FindFirstChild("SpeedChanged") then
+            local speedChanged = Instance.new("BoolValue", humanoid)
+            speedChanged.Name = "SpeedChanged"
+            
+            humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                if humanoid.WalkSpeed ~= targetSpeed then
+                    humanoid.WalkSpeed = targetSpeed
+                end
+            end)
+        end
+        
+        humanoid.WalkSpeed = targetSpeed
+    end
+end
+
+-- Menerapkan speed saat karakter baru muncul (setelah respawn)
+player.CharacterAdded:Connect(setSpeed)
+
+-- Menerapkan speed pada karakter yang sudah ada saat script dijalankan
+if player.Character then
+    setSpeed(player.Character)
+end
 	elseif text == "225" then
-	  local Players = game:GetService("Players")
-    local player = Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoid = character:WaitForChild("Humanoid")
+	  local normal = 16
+local targetSpeed = 225
+
+local player = game:GetService("Players").LocalPlayer
+local humanoid
+
+local function setSpeed(character)
+    if not character then return end
     
-    humanoid.WalkSpeed = 225
+    -- Menunggu Humanoid dimuat untuk memastikan script tidak error
+    humanoid = character:WaitForChild("Humanoid", 5) 
+    
+    if humanoid and humanoid:IsA("Humanoid") then
+        -- Menghindari pengulangan koneksi
+        if not humanoid:FindFirstChild("SpeedChanged") then
+            local speedChanged = Instance.new("BoolValue", humanoid)
+            speedChanged.Name = "SpeedChanged"
+            
+            humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                if humanoid.WalkSpeed ~= targetSpeed then
+                    humanoid.WalkSpeed = targetSpeed
+                end
+            end)
+        end
+        
+        humanoid.WalkSpeed = targetSpeed
+    end
+end
+
+-- Menerapkan speed saat karakter baru muncul (setelah respawn)
+player.CharacterAdded:Connect(setSpeed)
+
+-- Menerapkan speed pada karakter yang sudah ada saat script dijalankan
+if player.Character then
+    setSpeed(player.Character)
+end
 	elseif text == "250" then
-	  local Players = game:GetService("Players")
-    local player = Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoid = character:WaitForChild("Humanoid")
+	  local normal = 16
+local targetSpeed = 250
+
+local player = game:GetService("Players").LocalPlayer
+local humanoid
+
+local function setSpeed(character)
+    if not character then return end
     
-    humanoid.WalkSpeed = 250
+    -- Menunggu Humanoid dimuat untuk memastikan script tidak error
+    humanoid = character:WaitForChild("Humanoid", 5) 
+    
+    if humanoid and humanoid:IsA("Humanoid") then
+        -- Menghindari pengulangan koneksi
+        if not humanoid:FindFirstChild("SpeedChanged") then
+            local speedChanged = Instance.new("BoolValue", humanoid)
+            speedChanged.Name = "SpeedChanged"
+            
+            humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                if humanoid.WalkSpeed ~= targetSpeed then
+                    humanoid.WalkSpeed = targetSpeed
+                end
+            end)
+        end
+        
+        humanoid.WalkSpeed = targetSpeed
+    end
+end
+
+-- Menerapkan speed saat karakter baru muncul (setelah respawn)
+player.CharacterAdded:Connect(setSpeed)
+
+-- Menerapkan speed pada karakter yang sudah ada saat script dijalankan
+if player.Character then
+    setSpeed(player.Character)
+end
 	elseif text == "300" then
-	  local Players = game:GetService("Players")
-    local player = Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoid = character:WaitForChild("Humanoid")
+	  local normal = 16
+local targetSpeed = 300
+
+local player = game:GetService("Players").LocalPlayer
+local humanoid
+
+local function setSpeed(character)
+    if not character then return end
     
-    humanoid.WalkSpeed = 300
+    -- Menunggu Humanoid dimuat untuk memastikan script tidak error
+    humanoid = character:WaitForChild("Humanoid", 5) 
+    
+    if humanoid and humanoid:IsA("Humanoid") then
+        -- Menghindari pengulangan koneksi
+        if not humanoid:FindFirstChild("SpeedChanged") then
+            local speedChanged = Instance.new("BoolValue", humanoid)
+            speedChanged.Name = "SpeedChanged"
+            
+            humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                if humanoid.WalkSpeed ~= targetSpeed then
+                    humanoid.WalkSpeed = targetSpeed
+                end
+            end)
+        end
+        
+        humanoid.WalkSpeed = targetSpeed
+    end
+end
+
+-- Menerapkan speed saat karakter baru muncul (setelah respawn)
+player.CharacterAdded:Connect(setSpeed)
+
+-- Menerapkan speed pada karakter yang sudah ada saat script dijalankan
+if player.Character then
+    setSpeed(player.Character)
+end
+	elseif text == "350" then
+	  local normal = 16
+local targetSpeed = 350
+
+local player = game:GetService("Players").LocalPlayer
+local humanoid
+
+local function setSpeed(character)
+    if not character then return end
+    
+    -- Menunggu Humanoid dimuat untuk memastikan script tidak error
+    humanoid = character:WaitForChild("Humanoid", 5) 
+    
+    if humanoid and humanoid:IsA("Humanoid") then
+        -- Menghindari pengulangan koneksi
+        if not humanoid:FindFirstChild("SpeedChanged") then
+            local speedChanged = Instance.new("BoolValue", humanoid)
+            speedChanged.Name = "SpeedChanged"
+            
+            humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                if humanoid.WalkSpeed ~= targetSpeed then
+                    humanoid.WalkSpeed = targetSpeed
+                end
+            end)
+        end
+        
+        humanoid.WalkSpeed = targetSpeed
+    end
+end
+
+-- Menerapkan speed saat karakter baru muncul (setelah respawn)
+player.CharacterAdded:Connect(setSpeed)
+
+-- Menerapkan speed pada karakter yang sudah ada saat script dijalankan
+if player.Character then
+    setSpeed(player.Character)
+end
 	end
 end)
-local normal = dropdown:Add("NORMAL")  -- Options 
-local t115 = dropdown:Add("115")
+local t115 = dropdown:Add("115")  -- Options 
 local t150 = dropdown:Add("150")
 local t225 = dropdown:Add("225")
 local t250 = dropdown:Add("250")
 local t300 = dropdown:Add("300")
+local t350 = dropdown:Add("350")
 
 features:AddButton("TPTOOL",function()
   local player = game.Players.LocalPlayer
