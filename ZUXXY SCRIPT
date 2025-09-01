@@ -1,0 +1,471 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "💠SCRIPT BY ZUXXY💠",
+   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   LoadingTitle = "💠SPACIAL SCRIPT FOR VIP USERS💠",
+   LoadingSubtitle = "BY ZUXXY",
+   ShowText = "Rayfield", -- for mobile users to unhide rayfield, change if you'd like
+   Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+   ToggleUIKeybind = "K", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil, -- Create a custom folder for your hub/game
+      FileName = "Big Hub"
+   },
+
+   Discord = {
+      Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
+      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+   },
+
+   KeySystem = false, -- Set this to true to use our key system
+   KeySettings = {
+      Title = "Untitled",
+      Subtitle = "Key System",
+      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
+      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+   }
+})
+
+local MainTab = Window:CreateTab("MAIN🏠", nil) -- Title, Image
+local MainSection = MainTab:CreateSection("SCRIPT FOR PVP")
+
+local Toggle = MainTab:CreateToggle({
+   Name = "TELEPORT NEAREST GUI",
+   CurrentValue = false,
+   Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Value)
+       if Value then
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/PEMBALAP-F1-0/SC/refs/heads/main/TELEPORT%20HUB"))()
+  elseif not Value then
+    -- KODE UNTUK MENONAKTIFKAN FITUR
+    -- Skrip untuk menghilangkan GUI "TeleportToggle"
+    local Player = game:GetService("Players").LocalPlayer
+    local PlayerGui = Player:WaitForChild("PlayerGui")
+    
+    -- Cari ScreenGui dengan nama "TeleportToggle"
+    local teleportGui = PlayerGui:FindFirstChild("TeleportToggle")
+    
+    -- Jika ditemukan, hancurkan (hapus)
+    if teleportGui then
+        teleportGui:Destroy()
+        print("GUI TeleportToggle telah dihapus.")
+    else
+        print("GUI TeleportToggle tidak ditemukan.")
+    end
+  end
+   end,
+})
+
+local Toggle = MainTab:CreateToggle({
+   Name = "CAMLOCK",
+   CurrentValue = false,
+   Flag = "Toggle2", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Value)
+      if Value then
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local LocalPlayer = Players.LocalPlayer
+    local Mouse = game.Players.LocalPlayer:GetMouse()
+    local CamlockState = false
+    local Prediction = 0.1768521
+    local HorizontalPrediction = 0.111076110
+    local VerticalPrediction = 0.11034856
+    local XPrediction = 20
+    local YPrediction = 20
+    
+    local Players = game:GetService("Players")	
+    local LP = Players.LocalPlayer	
+    local Mouse = LP:GetMouse()	
+    
+    local Locked = true
+    
+    getgenv().Key = "q"
+    
+    function FindNearestEnemy()
+        local ClosestDistance, ClosestPlayer = math.huge, nil
+        local CenterPosition =
+            Vector2.new(
+            game:GetService("GuiService"):GetScreenResolution().X / 2,
+            game:GetService("GuiService"):GetScreenResolution().Y / 2
+        )
+    
+        for _, Player in ipairs(game:GetService("Players"):GetPlayers()) do
+            if Player ~= LocalPlayer then
+                local Character = Player.Character
+                if Character and Character:FindFirstChild("HumanoidRootPart") and Character.Humanoid.Health > 0 then
+                    local Position, IsVisibleOnViewport =
+                        game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(Character.HumanoidRootPart.Position)
+    
+                    if IsVisibleOnViewport then
+                        local Distance = (CenterPosition - Vector2.new(Position.X, Position.Y)).Magnitude
+                        if Distance < ClosestDistance then
+                            ClosestPlayer = Character.HumanoidRootPart
+                            ClosestDistance = Distance
+                        end
+                    end
+                end
+            end
+        end
+    
+        return ClosestPlayer
+    end
+    
+    local enemy = nil
+    -- Function to aim the camera at the nearest enemy's HumanoidRootPart
+    RunService.Heartbeat:Connect(
+        function()
+            if CamlockState == true then
+                if enemy then
+                    local camera = workspace.CurrentCamera
+                    camera.CFrame = CFrame.new(camera.CFrame.p, enemy.Position + enemy.Velocity * Prediction)
+                end
+            end
+        end
+    )
+    
+    Mouse.KeyDown:Connect(function(k)	
+        if k == getgenv().Key then	
+                Locked = not Locked	
+                if Locked then	
+                    enemy = FindNearestEnemy()
+                    CamlockState = true
+                 else	
+                    if enemy ~= nil then	
+                        enemy = nil	
+                        CamlockState = false
+                    end	
+                end	
+        end	
+    end)
+    
+    local Rushex = Instance.new("ScreenGui")
+    local Frame = Instance.new("Frame")
+    local UICorner = Instance.new("UICorner")
+    local Logo = Instance.new("ImageLabel")
+    local TextButton = Instance.new("TextButton")
+    local UICorner_2 = Instance.new("UICorner")
+    
+    --Properties:
+    
+    Rushex.Name = "CAMLOCK"
+    Rushex.Parent = game.CoreGui
+    Rushex.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    Frame.Parent = Rushex
+    Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)  -- Background set to white
+    Frame.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Frame.BorderSizePixel = 0
+    Frame.Position = UDim2.new(0.133798108, 0, 0.20107238, 0)
+    Frame.Size = UDim2.new(0, 202, 0, 70)
+    Frame.Active = true
+    Frame.Draggable = true
+    
+    local function TopContainer()
+    	Frame.Position = UDim2.new(0.5, -Frame.AbsoluteSize.X / 2, 0, -Frame.AbsoluteSize.Y / 2)
+    end
+    
+    TopContainer()
+    Frame:GetPropertyChangedSignal("AbsoluteSize"):Connect(TopContainer)
+    
+    UICorner.Parent = Frame
+    
+    Logo.Name = "Logo"
+    Logo.Parent = Frame
+    Logo.BackgroundColor3 = Color3.fromRGB(100, 255, 100)
+    Logo.BackgroundTransparency = 3.000
+    Logo.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    Logo.BorderSizePixel = 0
+    Logo.Position = UDim2.new(0.326732665, 0, 0, 0)
+    Logo.Size = UDim2.new(0, 70, 0, 70)
+    Logo.Image = "rbxassetid://830610397"
+    Logo.ImageTransparency = 0.300
+    
+    TextButton.Parent = Frame
+    TextButton.BackgroundColor3 = Color3.fromRGB(75, 80, 255)
+    TextButton.BackgroundTransparency = 5.000
+    TextButton.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    TextButton.BorderSizePixel = 0
+    TextButton.Position = UDim2.new(0.0792079195, 0, 0.18571429, 0)
+    TextButton.Size = UDim2.new(0, 170, 0, 44)
+    TextButton.Font = Enum.Font.SourceSansSemibold
+    TextButton.Text = "CAMLOCK"
+    TextButton.TextColor3 = Color3.fromRGB(0, 0, 0)  -- Text color changed to black
+    TextButton.TextScaled = true
+    TextButton.TextSize = 18.000
+    TextButton.TextWrapped = true
+    local state = true
+    TextButton.MouseButton1Click:Connect(
+        function()
+            state = not state
+            if not state then
+                TextButton.Text = "ON"
+                CamlockState = true
+                enemy = FindNearestEnemy()
+            else
+                TextButton.Text = "OFF"
+                CamlockState = false
+                enemy = nil
+            end
+        end
+    )
+    
+    -- Function to hide the loading screen after a certain duration
+    local function HideLoadingScreen()
+        LoadingScreen:Destroy()
+    end
+ elseif not Value then
+  local CoreGui = game:GetService("CoreGui")
+
+  local rushexGui = CoreGui:FindFirstChild("CAMLOCK")
+  
+  if rushexGui then
+      rushexGui:Destroy()
+      print("GUI 'Rushex' telah dihapus.")
+  else
+      print("GUI 'Rushex' tidak ditemukan.")
+    end
+  end
+   end,
+})
+
+local PlayerTab = Window:CreateTab("PLAYER👤", nil) -- Title, Image
+local PlayerSection = PlayerTab:CreateSection("MAIN CHARACTER MENU")
+
+_G.WalkWater = false
+
+local Toggle = PlayerTab:CreateToggle({
+   Name = "Walk On Water",
+   CurrentValue = false,
+   Flag = "WalkWater",
+   Callback = function(Value)
+      _G.WalkWater = Value
+      
+      -- Thread untuk mengubah ukuran water plane
+      task.spawn(function()
+         while _G.WalkWater do
+            pcall(function()
+               local waterPlane = game:GetService("Workspace").Map:FindFirstChild("WaterBase-Plane")
+               if waterPlane then
+                  waterPlane.Size = Vector3.new(1000, 112, 1000)
+               end
+            end)
+            task.wait()
+         end
+         
+         -- Kembalikan ke ukuran normal ketika loop selesai
+         pcall(function()
+            local waterPlane = game:GetService("Workspace").Map:FindFirstChild("WaterBase-Plane")
+            if waterPlane then
+               waterPlane.Size = Vector3.new(1000, 80, 1000)
+            end
+         end)
+      end)
+      
+      print("Walk On Water: " .. tostring(Value))
+   end,
+})
+
+_G.AutoRaceV4 = false
+
+local Toggle = RaceTab:CreateToggle({
+   Name = "Auto Race Aktif V4",
+   CurrentValue = false,
+   Flag = "AutoRaceV4",
+   Callback = function(Value)
+      _G.AutoRaceV4 = Value
+      
+      -- Thread untuk auto race
+      spawn(function()
+         while wait() do
+            pcall(function()
+               if _G.AutoRaceV4 then
+                  game:GetService("VirtualInputManager"):SendKeyEvent(true, "Y", false, game)
+                  wait()
+                  game:GetService("VirtualInputManager"):SendKeyEvent(false, "Y", false, game)
+               end
+            end)
+         end
+      end)
+   end,
+})
+
+local CombatTab = Window:CreateTab("COMBAT⚔️", nil)
+local CombatSection = CombatTab:CreateSection("Auto Attack Settings")
+
+-- Variabel global untuk status auto attack
+_G.FastAttack = false
+
+local Toggle = CombatTab:CreateToggle({
+   Name = "Auto Attack (Kill Aura)",
+   CurrentValue = false,
+   Flag = "AutoAttack",
+   Callback = function(Value)
+      _G.FastAttack = Value
+      
+      if _G.FastAttack then
+         -- Memulai sistem fast attack ketika toggle diaktifkan
+         task.spawn(function()
+            local _ENV = (getgenv or getrenv or getfenv)()
+
+            local function SafeWaitForChild(parent, childName)
+                local success, result = pcall(function()
+                    return parent:WaitForChild(childName)
+                end)
+                if not success or not result then
+                    warn("noooooo: " .. childName)
+                end
+                return result
+            end
+
+            local function WaitChilds(path, ...)
+                local last = path
+                for _, child in {...} do
+                    last = last:FindFirstChild(child) or SafeWaitForChild(last, child)
+                    if not last then break end
+                end
+                return last
+            end
+
+            local VirtualInputManager = game:GetService("VirtualInputManager")
+            local CollectionService = game:GetService("CollectionService")
+            local ReplicatedStorage = game:GetService("ReplicatedStorage")
+            local TeleportService = game:GetService("TeleportService")
+            local RunService = game:GetService("RunService")
+            local Players = game:GetService("Players")
+            local Player = Players.LocalPlayer
+
+            if not Player then
+                warn("Không tìm thấy người chơi cục bộ.")
+                return
+            end
+
+            local Remotes = SafeWaitForChild(ReplicatedStorage, "Remotes")
+            if not Remotes then return end
+
+            local Validator = SafeWaitForChild(Remotes, "Validator")
+            local CommF = SafeWaitForChild(Remotes, "CommF_")
+            local CommE = SafeWaitForChild(Remotes, "CommE")
+
+            local ChestModels = SafeWaitForChild(workspace, "ChestModels")
+            local WorldOrigin = SafeWaitForChild(workspace, "_WorldOrigin")
+            local Characters = SafeWaitForChild(workspace, "Characters")
+            local Enemies = SafeWaitForChild(workspace, "Enemies")
+            local Map = SafeWaitForChild(workspace, "Map")
+
+            local EnemySpawns = SafeWaitForChild(WorldOrigin, "EnemySpawns")
+            local Locations = SafeWaitForChild(WorldOrigin, "Locations")
+
+            local RenderStepped = RunService.RenderStepped
+            local Heartbeat = RunService.Heartbeat
+            local Stepped = RunService.Stepped
+
+            local Modules = SafeWaitForChild(ReplicatedStorage, "Modules")
+            local Net = SafeWaitForChild(Modules, "Net")
+
+            local sethiddenproperty = sethiddenproperty or function(...) return ... end
+            local setupvalue = setupvalue or (debug and debug.setupvalue)
+            local getupvalue = getupvalue or (debug and debug.getupvalue)
+
+            local Settings = {
+                AutoClick = true,
+                ClickDelay = 0
+            }
+
+            if _ENV.rz_FastAttack then
+                return _ENV.rz_FastAttack
+            end
+
+            local FastAttack = {
+                Distance = 100,
+                attackMobs = true,
+                attackPlayers = true,
+                Equipped = nil
+            }
+
+            local RegisterAttack = SafeWaitForChild(Net, "RE/RegisterAttack")
+            local RegisterHit = SafeWaitForChild(Net, "RE/RegisterHit")
+
+            local function IsAlive(character)
+                return character and character:FindFirstChild("Humanoid") and character.Humanoid.Health > 0
+            end
+
+            local function ProcessEnemies(OthersEnemies, Folder)
+                local BasePart = nil
+                for _, Enemy in Folder:GetChildren() do
+                    local Head = Enemy:FindFirstChild("Head")
+                    if Head and IsAlive(Enemy) and Player:DistanceFromCharacter(Head.Position) < FastAttack.Distance then
+                        if Enemy ~= Player.Character then
+                            table.insert(OthersEnemies, { Enemy, Head })
+                            BasePart = Head
+                        end
+                    end
+                end
+                return BasePart
+            end
+
+            function FastAttack:Attack(BasePart, OthersEnemies)
+                if not BasePart or #OthersEnemies == 0 then return end
+                RegisterAttack:FireServer(Settings.ClickDelay or 0)
+                RegisterHit:FireServer(BasePart, OthersEnemies)
+            end
+
+            function FastAttack:AttackNearest()
+                local OthersEnemies = {}
+                local Part1 = ProcessEnemies(OthersEnemies, Enemies)
+                local Part2 = ProcessEnemies(OthersEnemies, Characters)
+
+                local character = Player.Character
+                if not character then return end
+                local equippedWeapon = character:FindFirstChildOfClass("Tool")
+
+                if equippedWeapon and equippedWeapon:FindFirstChild("LeftClickRemote") then
+                    for _, enemyData in ipairs(OthersEnemies) do
+                        local enemy = enemyData[1]
+                        local direction = (enemy.HumanoidRootPart.Position - character:GetPivot().Position).Unit
+                        pcall(function()
+                            equippedWeapon.LeftClickRemote:FireServer(direction, 1)
+                        end)
+                    end
+                elseif #OthersEnemies > 0 then
+                    self:Attack(Part1 or Part2, OthersEnemies)
+                else
+                    task.wait(0)
+                end
+            end
+
+            function FastAttack:BladeHits()
+                local Equipped = IsAlive(Player.Character) and Player.Character:FindFirstChildOfClass("Tool")
+                if Equipped and Equipped.ToolTip ~= "Gun" then
+                    self:AttackNearest()
+                else
+                    task.wait(0)
+                end
+            end
+
+            -- Loop utama untuk auto attack
+            while _G.FastAttack do
+                if Settings.AutoClick then
+                    FastAttack:BladeHits()
+                end
+                task.wait(Settings.ClickDelay)
+            end
+         end)
+      else
+         -- Hentikan sistem fast attack ketika toggle dimatikan
+         print("Auto Attack Dimatikan")
+      end
+      
+      print("Auto Attack: " .. tostring(Value))
+   end,
+})
