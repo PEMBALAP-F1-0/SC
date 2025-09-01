@@ -276,30 +276,6 @@ local Toggle = PlayerTab:CreateToggle({
    end,
 })
 
-_G.AutoRaceV4 = false
-
-local Toggle = RaceTab:CreateToggle({
-   Name = "Auto Race Aktif V4",
-   CurrentValue = false,
-   Flag = "AutoRaceV4",
-   Callback = function(Value)
-      _G.AutoRaceV4 = Value
-      
-      -- Thread untuk auto race
-      spawn(function()
-         while wait() do
-            pcall(function()
-               if _G.AutoRaceV4 then
-                  game:GetService("VirtualInputManager"):SendKeyEvent(true, "Y", false, game)
-                  wait()
-                  game:GetService("VirtualInputManager"):SendKeyEvent(false, "Y", false, game)
-               end
-            end)
-         end
-      end)
-   end,
-})
-
 local CombatTab = Window:CreateTab("COMBAT⚔️", nil)
 local CombatSection = CombatTab:CreateSection("Auto Attack Settings")
 
