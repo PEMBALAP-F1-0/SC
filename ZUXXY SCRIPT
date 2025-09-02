@@ -246,7 +246,7 @@ _G.WalkWater = false
 
 local Toggle = PlayerTab:CreateToggle({
    Name = "Walk On Water",
-   CurrentValue = false,
+   CurrentValue = true,
    Flag = "WalkWater",
    Callback = function(Value)
       _G.WalkWater = Value
@@ -276,7 +276,82 @@ local Toggle = PlayerTab:CreateToggle({
    end,
 })
 
-local CombatTab = Window:CreateTab("COMBAT⚔️", nil)
+local currentSpeed = 155
+local isSpeedEnabled = false
+
+-- Referensi ke player dan humanoid
+local player = game:GetService("Players").LocalPlayer
+local humanoid
+local speedChangedFlag
+
+-- Fungsi untuk mengatur kecepatan
+local function setSpeed(character)
+    if not character or not isSpeedEnabled then return end
+    
+    humanoid = character:WaitForChild("Humanoid", 5) 
+    
+    if humanoid and humanoid:IsA("Humanoid") then
+        -- Menghindari pengulangan koneksi
+        if not humanoid:FindFirstChild("SpeedChanged") then
+            speedChangedFlag = Instance.new("BoolValue", humanoid)
+            speedChangedFlag.Name = "SpeedChanged"
+            
+            humanoid:GetPropertyChangedSignal("WalkSpeed"):Connect(function()
+                if humanoid.WalkSpeed ~= currentSpeed and isSpeedEnabled then
+                    humanoid.WalkSpeed = currentSpeed
+                end
+            end)
+        end
+        
+        humanoid.WalkSpeed = currentSpeed
+    end
+end
+
+-- Menerapkan speed saat karakter baru muncul
+player.CharacterAdded:Connect(setSpeed)
+
+-- Slider untuk mengatur kecepatan
+local SpeedSlider = PlayerTab:CreateSlider({
+    Name = "Kecepatan Berjalan",
+    Range = {16, 500},
+    Increment = 1,
+    Suffix = "Studs/detik",
+    CurrentValue = currentSpeed,
+    Flag = "SpeedValue",
+    Callback = function(value)
+        currentSpeed = value
+        -- Terapkan perubahan kecepatan jika speedhack aktif
+        if isSpeedEnabled and player.Character then
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = currentSpeed
+            end
+        end
+    end,
+})
+
+-- Toggle untuk mengaktifkan/menonaktifkan speedhack
+local SpeedToggle = PlayerTab:CreateToggle({
+    Name = "Aktifkan Speedhack",
+    CurrentValue = isSpeedEnabled,
+    Flag = "SpeedToggle",
+    Callback = function(value)
+        isSpeedEnabled = value
+        
+        if player.Character then
+            local humanoid = player.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                if isSpeedEnabled then
+                    humanoid.WalkSpeed = currentSpeed
+                else
+                    humanoid.WalkSpeed = 16 -- Kembali ke kecepatan normal
+                end
+            end
+        end
+    end,
+})
+
+local CombatTab = Window:CreateTab("COMBAT⚔️ | ESP🧩", nil)
 local CombatSection = CombatTab:CreateSection("Auto Attack Settings")
 
 -- Variabel global untuk status auto attack
@@ -284,7 +359,7 @@ _G.FastAttack = false
 
 local Toggle = CombatTab:CreateToggle({
    Name = "Auto Attack (Kill Aura)",
-   CurrentValue = false,
+   CurrentValue = true,
    Flag = "AutoAttack",
    Callback = function(Value)
       _G.FastAttack = Value
@@ -445,3 +520,161 @@ local Toggle = CombatTab:CreateToggle({
       print("Auto Attack: " .. tostring(Value))
    end,
 })
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local ESPEnabled = false
+local ESPFolders = {} -- Untuk menyimpan folder ESP setiap pemain
+
+-- Fungsi untuk membuat ESP
+local function createESP(player)
+    if not player.Character then return end
+    if not player.Character:FindFirstChild("Head") then return end
+    
+    -- Hapus ESP lama jika ada
+    if ESPFolders[player] then
+        ESPFolders[player]:Destroy()
+        ESPFolders[player] = nil
+    end
+    
+    -- Buat folder untuk menyimpan ESP components
+    local espFolder = Instance.new("Folder")
+    espFolder.Name = player.Name .. "_ESP"
+    espFolder.Parent = player.Character
+    
+    local esp = Instance.new("BillboardGui")
+    esp.Name = "ESP"
+    esp.Adornee = player.Character.Head
+    esp.Size = UDim2.new(0, 200, 0, 50)
+    esp.StudsOffset = Vector3.new(0, 3, 0)
+    esp.AlwaysOnTop = true
+    esp.Parent = espFolder
+
+    local frame = Instance.new("Frame", esp)
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundColor3 = Color3.new(0, 0, 0)
+    frame.BackgroundTransparency = 0.5
+
+    local nameLabel = Instance.new("TextLabel", frame)
+    nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = player.Name
+    nameLabel.TextColor3 = Color3.new(1, 1, 1)
+    nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.TextSize = 14
+
+    local healthLabel = Instance.new("TextLabel", frame)
+    healthLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    healthLabel.Position = UDim2.new(0, 0, 0.5, 0)
+    healthLabel.BackgroundTransparency = 1
+    healthLabel.TextColor3 = Color3.new(1, 0, 0)
+    healthLabel.Font = Enum.Font.Gotham
+    healthLabel.TextSize = 12
+
+    -- Simpan folder ESP
+    ESPFolders[player] = espFolder
+    
+    -- Update ESP setiap frame
+    local connection
+    connection = game:GetService("RunService").RenderStepped:Connect(function()
+        if not ESPEnabled then
+            connection:Disconnect()
+            return
+        end
+        
+        if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character:FindFirstChild("HumanoidRootPart") and
+           LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local humanoid = player.Character.Humanoid
+            healthLabel.Text = "Health: " .. math.floor(humanoid.Health) .. "/" .. math.floor(humanoid.MaxHealth)
+            local distance = (LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).magnitude
+            nameLabel.Text = player.Name .. " - " .. math.floor(distance) .. " studs"
+        else
+            connection:Disconnect()
+            if ESPFolders[player] then
+                ESPFolders[player]:Destroy()
+                ESPFolders[player] = nil
+            end
+        end
+    end)
+end
+
+-- Fungsi untuk menghapus ESP
+local function removeESP(player)
+    if ESPFolders[player] then
+        ESPFolders[player]:Destroy()
+        ESPFolders[player] = nil
+    end
+end
+
+-- Fungsi untuk toggle ESP
+local function toggleESP(value)
+    ESPEnabled = value
+    
+    if value then
+        -- Buat ESP untuk semua pemain
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                if player.Character then
+                    createESP(player)
+                end
+                
+                -- Hubungkan event untuk karakter yang dimuat nanti
+                player.CharacterAdded:Connect(function(character)
+                    if ESPEnabled then
+                        wait(1) -- Tunggu karakter sepenuhnya dimuat
+                        createESP(player)
+                    end
+                end)
+            end
+        end
+    else
+        -- Hapus semua ESP
+        for player, _ in pairs(ESPFolders) do
+            removeESP(player)
+        end
+    end
+end
+
+CombatTab:CreateToggle({
+    Name = "Enable ESP",
+    CurrentValue = false,
+    Flag = "ESPEnabled",
+    Callback = function(value)
+        toggleESP(value)
+    end,
+})
+
+-- Handle pemain baru yang bergabung
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        if ESPEnabled then
+            wait(1) -- Tunggu karakter sepenuhnya dimuat
+            createESP(player)
+        end
+    end)
+end)
+
+-- Handle ketika pemain keluar
+Players.PlayerRemoving:Connect(function(player)
+    removeESP(player)
+end)
+
+-- Handle ketika karakter dimatikan
+LocalPlayer.CharacterRemoving:Connect(function()
+    if ESPEnabled then
+        -- Nonaktifkan sementara ESP saat karakter lokal mati
+        local wasEnabled = ESPEnabled
+        toggleESP(false)
+        
+        -- Aktifkan kembali setelah respawn
+        LocalPlayer.CharacterAdded:Wait()
+        wait(1)
+        if wasEnabled then
+            toggleESP(true)
+        end
+    end
+end)
+
+Rayfield:LoadConfiguration()
