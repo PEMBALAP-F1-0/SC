@@ -677,4 +677,152 @@ LocalPlayer.CharacterRemoving:Connect(function()
     end
 end)
 
-Rayfield:LoadConfiguration()
+local ShopTab = Window:CreateTab("Shop🛒", nil) -- Title, Image
+local Section = ShopTab:CreateSection("SHOP NJING")
+
+local Label = ShopTab:CreateLabel("Fighting Style", nil, Color3.fromRGB(255, 255, 255), false) -- Title, Icon, Color, IgnoreTheme
+
+local Button = ShopTab:CreateButton({
+   Name = "Buy Black Leg $150,000",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyBlackLeg")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Buy Electro $550,000",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyElectro")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Buy Water Kung Fu $750,000",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyFishmanKarate")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Buy Dragon Claw 1,500F",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BlackbeardReward","DragonClaw","1")
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BlackbeardReward","DragonClaw","2")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Buy Superhuman $3,000,000",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuySuperhuman")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Buy Death Step $5,000,000 5,000F",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyDeathStep")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Buy Sharkman Karate $2,500,000 5,000F",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuySharkmanKarate",true)
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuySharkmanKarate")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Buy Electric Claw $3,000,000 5,000F",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyElectricClaw")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Buy Dragon Talon $3,000,000 5,000F",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyDragonTalon")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Buy God Human $5,000,000 5,000F",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyGodhuman")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Buy Sanguine Art $5,000,000 5,000F",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuySanguineArt", true)
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuySanguineArt")
+   end,
+})
+
+local Label = ShopTab:CreateLabel("Sword", nil, Color3.fromRGB(255, 255, 255), false) -- Title, Icon, Color, IgnoreTheme
+
+local Button = ShopTab:CreateButton({
+   Name = "Cutlass $1,000",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem","Cutlass")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Katana $1,000",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem","Katana")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Iron Mace $25,000",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem","Iron Mace")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Dual Katana $12,000",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem","Duel Katana")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Triple Katana $60,000",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem","Triple Katana")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Pipe $100,000",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem","Pipe")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Dual-Headed Blade $400,000",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem","Dual-Headed Blade")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Bisento $1,200,000",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem","Bisento")
+   end,
+})
+
+local Button = ShopTab:CreateButton({
+   Name = "Soul Cane $750,000",
+   Callback = function()
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem","Soul Cane")
+   end,
+})
