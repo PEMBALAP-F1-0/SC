@@ -239,6 +239,270 @@ local Toggle = MainTab:CreateToggle({
    end,
 })
 
+local Button = MainTab:CreateButton({
+   Name = "TELEPORT DEPAN",
+   Callback = function()
+   -- Tempatkan ini di StarterGui sebagai LocalScript
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Buat ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ForwardTeleportGui"
+screenGui.Parent = playerGui
+
+-- Buat Tombol
+local button = Instance.new("TextButton")
+button.Name = "ForwardTeleportButton"
+button.Size = UDim2.new(0, 70, 0, 70)
+button.Position = UDim2.new(0, 20, 0, 20) -- Pojok kiri atas
+button.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Text = "FORWARD\n+60"
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 14
+button.TextWrapped = true
+button.BorderSizePixel = 0
+button.ZIndex = 10
+
+-- Tambahkan corner rounding
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 15)
+corner.Parent = button
+
+-- Tambahkan shadow effect
+local shadow = Instance.new("UIStroke")
+shadow.Color = Color3.fromRGB(150, 50, 50)
+shadow.Thickness = 3
+shadow.Parent = button
+
+button.Parent = screenGui
+
+-- Variabel untuk drag & drop
+local dragging = false
+local dragInput
+local dragStart
+local startPos
+
+-- Fungsi untuk update posisi tombol
+local function update(input)
+	local delta = input.Position - dragStart
+	button.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+-- Event untuk mulai drag
+button.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = button.Position
+		
+		-- Efek visual saat didrag
+		button.BackgroundTransparency = 0.3
+		
+		-- Capture input selama drag
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+				button.BackgroundTransparency = 0
+			end
+		end)
+	end
+end)
+
+-- Event selama drag
+button.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+-- Update posisi selama drag
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		update(input)
+	end
+end)
+
+-- Fungsi teleport ke depan
+local function teleportForward()
+	local character = player.Character
+	if not character then return end
+	
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+	if not humanoidRootPart then return end
+	
+	-- Dapatkan arah hadapan karakter
+	local currentCFrame = humanoidRootPart.CFrame
+	local forwardDirection = currentCFrame.LookVector
+	
+	-- Hitung posisi baru (60 stud ke depan)
+	local teleportDistance = 60
+	local newPosition = humanoidRootPart.Position + (forwardDirection * teleportDistance)
+	
+	-- Eksekusi teleport
+	humanoidRootPart.CFrame = CFrame.new(newPosition, newPosition + forwardDirection)
+	
+	-- Efek visual saat diklik
+	local originalColor = button.BackgroundColor3
+	button.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+	button.Text = "TELEPORTING..."
+	
+	-- Reset setelah 0.3 detik
+	delay(0.3, function()
+		button.BackgroundColor3 = originalColor
+		button.Text = "FORWARD\n+60"
+	end)
+end
+
+-- Hubungkan fungsi teleport ke klik (hanya jika tidak sedang drag)
+button.MouseButton1Click:Connect(function()
+	if not dragging then
+		teleportForward()
+	end
+end)
+
+-- Handle touch devices
+button.TouchTap:Connect(function()
+	if not dragging then
+		teleportForward()
+	end
+end)
+
+print("Tombol Teleport Forward (+60 stud) telah dibuat! Drag untuk memindahkan posisi.")
+   end,
+})
+
+local Button = MainTab:CreateButton({
+   Name = "TELEPORT RANDOM",
+   Callback = function()
+   local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Buat ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "TeleportGui"
+screenGui.Parent = playerGui
+
+-- Buat Tombol
+local button = Instance.new("TextButton")
+button.Name = "TeleportButton"
+button.Size = UDim2.new(0, 60, 0, 60)
+button.Position = UDim2.new(0, 20, 0, 20) -- Pojok kiri atas
+button.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Text = "TELEPORT"
+button.Font = Enum.Font.SourceSansBold
+button.TextSize = 14
+button.BorderSizePixel = 0
+button.ZIndex = 10
+
+-- Tambahkan corner rounding
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = button
+
+-- Tambahkan shadow effect
+local shadow = Instance.new("UIStroke")
+shadow.Color = Color3.fromRGB(0, 85, 127)
+shadow.Thickness = 3
+shadow.Parent = button
+
+button.Parent = screenGui
+
+-- Variabel untuk drag & drop
+local dragging = false
+local dragInput
+local dragStart
+local startPos
+
+-- Fungsi untuk update posisi tombol
+local function update(input)
+	local delta = input.Position - dragStart
+	button.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+-- Event untuk mulai drag
+button.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = button.Position
+		
+		-- Capture input selama drag
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+-- Event selama drag
+button.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+-- Update posisi selama drag
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		update(input)
+	end
+end)
+
+-- Fungsi teleport
+local function teleportRandom()
+	local character = player.Character
+	if not character then return end
+	
+	local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+	if not humanoidRootPart then return end
+	
+	-- Arah dan jarak teleport (3-5 stud)
+	local directions = {
+		Vector3.new(-60, 0, 0),  -- Kiri
+		Vector3.new(60, 0, 0),   -- Kanan
+		Vector3.new(0, 0, 60),   -- Depan
+		Vector3.new(0, 0, -60)   -- Belakang
+	}
+	
+	-- Pilih arah acak
+	local randomIndex = math.random(1, #directions)
+	local newPosition = humanoidRootPart.Position + directions[randomIndex]
+	
+	-- Eksekusi teleport
+	humanoidRootPart.CFrame = CFrame.new(newPosition)
+	
+	-- Efek visual saat diklik
+	local originalColor = button.BackgroundColor3
+	button.BackgroundColor3 = Color3.fromRGB(0, 140, 220)
+	
+	-- Reset warna setelah 0.1 detik
+	delay(0.1, function()
+		button.BackgroundColor3 = originalColor
+	end)
+end
+
+-- Hubungkan fungsi teleport ke klik (hanya jika tidak sedang drag)
+button.MouseButton1Click:Connect(function()
+	if not dragging then
+		teleportRandom()
+	end
+end)
+
+-- Handle touch devices
+button.TouchTap:Connect(function()
+	if not dragging then
+		teleportRandom()
+	end
+end)
+
+print("Tombol Teleport telah dibuat! Drag untuk memindahkan posisi.")
+   end,
+})
+
 local PlayerTab = Window:CreateTab("PLAYER👤", nil) -- Title, Image
 local PlayerSection = PlayerTab:CreateSection("MAIN CHARACTER MENU")
 
@@ -826,3 +1090,5 @@ local Button = ShopTab:CreateButton({
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem","Soul Cane")
    end,
 })
+
+Rayfield:LoadConfiguration
