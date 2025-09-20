@@ -1090,5 +1090,3 @@ local Button = ShopTab:CreateButton({
         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyItem","Soul Cane")
    end,
 })
-
-Rayfield:LoadConfiguration
