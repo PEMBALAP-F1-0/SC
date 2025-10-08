@@ -1,0 +1,589 @@
+local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/tbao143/Library-ui/refs/heads/main/Redzhubui"))()
+
+local Window = redzlib:MakeWindow({
+  Title = "Miee Hub : Fish It",
+  SubTitle = "By Miee",
+  SaveFolder = "Miee hub"
+})
+
+Window:AddMinimizeButton({
+    Button = { Image = "rbxassetid://134791075681963", BackgroundTransparency = 0 },
+    Corner = { CornerRadius = UDim.new(35, 1) },
+})
+
+local Tab1 = Window:MakeTab({"Farm", "Home"})
+local Section = Tab1:AddSection({"Use Fishing Rod First Before Using Auto Farm"})
+
+-- Variabel untuk menyimpan status dan thread
+local AutoFishing = false
+local FishingThread = nil
+
+local function StartFishing(perfectCast)
+    FishingThread = task.spawn(function()
+        while AutoFishing do
+            pcall(function()
+                -- Langkah 1: Mulai memancing
+                local args1 = {
+                    1759519253.159527
+                }
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild("Packages"):WaitForChild("_Index")
+                    :WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
+                    :WaitForChild("RF/ChargeFishingRod"):InvokeServer(unpack(args1))
+                
+                wait(1)
+
+                -- Langkah 2: Lempar umpan dengan koordinat berbeda
+                local args2
+                if perfectCast then
+                    args2 = {
+                        -0.5718746185302734,  -- Koordinat untuk perfect cast
+                        0.9785474457785279
+                    }
+                else
+                    args2 = {
+                        -1.233184814453125,   -- Koordinat untuk GG cast
+                        0.9342951434868079
+                    }
+                end
+                
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild("Packages"):WaitForChild("_Index")
+                    :WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
+                    :WaitForChild("RF/RequestFishingMinigameStarted"):InvokeServer(unpack(args2))
+
+                -- Tunggu sinyal ikan menggigit
+                wait(3) -- Sesuaikan dengan waktu delay gigitan ikan
+                
+                -- Langkah 3: Menangkap ikan
+                game:GetService("ReplicatedStorage")
+                    :WaitForChild("Packages"):WaitForChild("_Index")
+                    :WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net")
+                    :WaitForChild("RE/FishingCompleted"):FireServer()
+                
+                wait(2) -- Delay sebelum ulangi
+            end)
+        end
+    end)
+end
+
+local function StopFishing()
+    if FishingThread then
+        task.cancel(FishingThread)
+        FishingThread = nil
+    end
+end
+
+-- Toggle 1: Auto Farm Normal
+Tab1:AddToggle({
+    Name = "Auto Farm Awesome Cast",
+    Description = "If you experience a bug then turn off the Auto Farm feature and <font color='rgb(255, 0, 0)'>Reset</font> your character.",
+    Default = false,
+    Callback = function(Value)
+        AutoFishing = Value
+        if AutoFishing then
+            StartFishing(false) -- false untuk normal cast
+        else
+            StopFishing()
+        end
+    end
+})
+
+local Toggle1 = Tab1:AddToggle({
+  Name = "Auto Farm Perfect Cast",
+  Description = "If you experience a bug then turn off the Auto Farm feature and <font color='rgb(255, 0, 0)'>Reset</font> your character.",
+  Default = false 
+})
+Toggle1:Callback(function(Value)
+ AutoFishing = Value
+        if AutoFishing then
+            StartFishing(true) -- true untuk perfect cast
+        else
+            StopFishing()
+        end
+end)
+
+Tab1:AddButton({"Sell all your fish", function(Value)
+game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RF/SellAllItems"):InvokeServer()
+end})
+
+local Tab1 = Window:MakeTab({"Player", "user"})
+local Section = Tab1:AddSection({"Player Menu"})
+
+local InfiniteJump = false
+
+local Toggle1 = Tab1:AddToggle({
+  Name = "Infinite Jump",
+  Description = "<font color='rgb(255, 0, 0)'>Use at your own risk</font>",
+  Default = false 
+})
+Toggle1:Callback(function(Value)
+InfiniteJump = Value
+if InfiniteJump then
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+
+local player = Players.LocalPlayer
+local humanoid
+
+-- Fungsi utama infinite jump
+local function onJumpRequest()
+	if humanoid then
+		humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+	end
+end
+
+-- Saat karakter spawn
+local function onCharacterAdded(character)
+	humanoid = character:WaitForChild("Humanoid")
+	UserInputService.JumpRequest:Connect(onJumpRequest)
+	print("[Infinite Jump] Aktif ✅")
+end
+
+-- Jalankan langsung jika karakter sudah ada
+if player.Character then
+	onCharacterAdded(player.Character)
+end
+
+player.CharacterAdded:Connect(onCharacterAdded)
+else
+--// Infinite Jump OFF
+-- Tempatkan di StarterPlayer > StarterPlayerScripts (LocalScript)
+
+local UserInputService = game:GetService("UserInputService")
+
+-- Hapus semua koneksi JumpRequest
+for _, conn in pairs(getconnections(UserInputService.JumpRequest)) do
+	conn:Disconnect()
+end
+
+print("[Infinite Jump] Dinonaktifkan ❌")
+end
+end)
+
+local flyEnabled = false
+local flySpeed = 16
+local bodyGyro, bodyVelocity
+local touchControls = {}
+local moveDirection = Vector3.new(0, 0, 0)
+
+-- Fly Function
+local function toggleFly(state)
+    flyEnabled = state
+    
+    if flyEnabled then
+        -- Enable fly
+        local speaker = game:GetService("Players").LocalPlayer
+        local chr = speaker.Character
+        if not chr then return end
+        
+        -- Tunggu hingga humanoid tersedia
+        local hum
+        repeat
+            hum = chr:FindFirstChildWhichIsA("Humanoid")
+            wait()
+        until hum
+        
+        -- Disable animations
+        if chr:FindFirstChild("Animate") then
+            chr.Animate.Disabled = true
+        end
+        
+        -- Set platform stand
+        hum.PlatformStand = true
+        
+        -- Create movement parts
+        local movePart = chr:FindFirstChild("HumanoidRootPart")
+        if not movePart then return end
+        
+        -- Clean up previous instances
+        if bodyGyro then bodyGyro:Destroy() end
+        if bodyVelocity then bodyVelocity:Destroy() end
+        
+        -- Create new instances
+        bodyGyro = Instance.new("BodyGyro")
+        bodyGyro.P = 9e4
+        bodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+        bodyGyro.cframe = movePart.CFrame
+        bodyGyro.Parent = movePart
+        
+        bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.velocity = Vector3.new(0, 0, 0)
+        bodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
+        bodyVelocity.Parent = movePart
+        
+        -- Create Mobile Controls
+        local gui = Instance.new("ScreenGui")
+        gui.Name = "FlyControls"
+        gui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+        
+        -- Joystick for movement
+        local joystickFrame = Instance.new("Frame")
+        joystickFrame.Name = "Joystick"
+        joystickFrame.Size = UDim2.new(0, 150, 0, 150)
+        joystickFrame.Position = UDim2.new(0, 50, 0.7, 0)
+        joystickFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        joystickFrame.BackgroundTransparency = 0.5
+        joystickFrame.BorderSizePixel = 0
+        joystickFrame.Parent = gui
+        
+        local joystick = Instance.new("Frame")
+        joystick.Name = "JoystickButton"
+        joystick.Size = UDim2.new(0, 50, 0, 50)
+        joystick.Position = UDim2.new(0.5, -25, 0.5, -25)
+        joystick.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        joystick.BackgroundTransparency = 0.3
+        joystick.BorderSizePixel = 0
+        joystick.Parent = joystickFrame
+        
+        -- Up/Down buttons
+        local upButton = Instance.new("TextButton")
+        upButton.Name = "UpButton"
+        upButton.Size = UDim2.new(0, 80, 0, 80)
+        upButton.Position = UDim2.new(0.8, 0, 0.5, -100)
+        upButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        upButton.BackgroundTransparency = 0.3
+        upButton.Text = "↑"
+        upButton.TextSize = 30
+        upButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        upButton.Parent = gui
+        
+        local downButton = Instance.new("TextButton")
+        downButton.Name = "DownButton"
+        downButton.Size = UDim2.new(0, 80, 0, 80)
+        downButton.Position = UDim2.new(0.8, 0, 0.5, 20)
+        downButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        downButton.BackgroundTransparency = 0.3
+        downButton.Text = "↓"
+        downButton.TextSize = 30
+        downButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        downButton.Parent = gui
+        
+        -- Store controls
+        touchControls.gui = gui
+        touchControls.joystickFrame = joystickFrame
+        touchControls.joystick = joystick
+        touchControls.upButton = upButton
+        touchControls.downButton = downButton
+        
+        -- Joystick movement
+        local joystickActive = false
+        local joystickPosition = Vector2.new(joystickFrame.AbsolutePosition.X + 75, joystickFrame.AbsolutePosition.Y + 75)
+        
+        local function updateMovement(touchPos)
+            local relativePos = Vector2.new(touchPos.X - joystickPosition.X, touchPos.Y - joystickPosition.Y)
+            local distance = math.min(75, math.sqrt(relativePos.X^2 + relativePos.Y^2))
+            local direction = relativePos.Unit
+            
+            -- Update joystick position
+            joystick.Position = UDim2.new(0, direction.X * distance + 50, 0, direction.Y * distance + 50)
+            
+            -- Set movement direction (invert Y for forward/backward)
+            moveDirection = Vector3.new(direction.X, 0, direction.Y)
+        end
+        
+        joystickFrame.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch then
+                joystickActive = true
+            end
+        end)
+        
+        joystickFrame.InputChanged:Connect(function(input)
+            if joystickActive and input.UserInputType == Enum.UserInputType.Touch then
+                updateMovement(input.Position)
+            end
+        end)
+        
+        joystickFrame.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch then
+                joystickActive = false
+                joystick.Position = UDim2.new(0.5, -25, 0.5, -25)
+                moveDirection = Vector3.new(0, 0, 0)
+            end
+        end)
+        
+        -- Up/Down buttons
+        local verticalSpeed = 0
+        
+        upButton.MouseButton1Down:Connect(function()
+            verticalSpeed = flySpeed
+        end)
+        
+        upButton.MouseButton1Up:Connect(function()
+            verticalSpeed = 0
+        end)
+        
+        downButton.MouseButton1Down:Connect(function()
+            verticalSpeed = -flySpeed
+        end)
+        
+        downButton.MouseButton1Up:Connect(function()
+            verticalSpeed = 0
+        end)
+        
+        -- Movement loop
+        local movementConnection
+        movementConnection = game:GetService("RunService").Heartbeat:Connect(function()
+            if not flyEnabled or not chr or not hum or not hum.Parent then
+                movementConnection:Disconnect()
+                return
+            end
+            
+            if bodyVelocity then
+                local camera = workspace.CurrentCamera
+                local cf = camera.CFrame
+                
+                -- Calculate movement based on camera direction
+                local moveVector = cf:VectorToWorldSpace(moveDirection * flySpeed)
+                moveVector = Vector3.new(moveVector.X, verticalSpeed, moveVector.Z)
+                
+                bodyVelocity.Velocity = moveVector
+                
+                -- Update gyro to face camera direction
+                if bodyGyro then
+                    bodyGyro.CFrame = cf
+                end
+            end
+        end)
+        
+        print("Fly enabled - Mobile controls activated")
+        
+    else
+        -- Disable fly
+        local speaker = game:GetService("Players").LocalPlayer
+        local chr = speaker.Character
+        if chr then
+            local hum = chr:FindFirstChildWhichIsA("Humanoid")
+            if hum then
+                hum.PlatformStand = false
+                
+                if chr:FindFirstChild("Animate") then
+                    chr.Animate.Disabled = false
+                end
+            end
+        end
+        
+        -- Clean up controls
+        if touchControls.gui then
+            touchControls.gui:Destroy()
+            touchControls = {}
+        end
+        
+        -- Clean up physics
+        if bodyGyro then
+            bodyGyro:Destroy()
+            bodyGyro = nil
+        end
+        
+        if bodyVelocity then
+            bodyVelocity:Destroy()
+            bodyVelocity = nil
+        end
+        
+        moveDirection = Vector3.new(0, 0, 0)
+        
+        print("Fly disabled")
+    end
+end
+
+-- Add Fly Toggle
+local Toggle1 = Tab1:AddToggle({
+  Name = "Fly Enabled",
+  Description = "Sorry if it's bad, because I'm already having a headache with this problem",
+  Default = false 
+})
+
+Toggle1:Callback(function(Value)
+    toggleFly(Value)
+end)
+
+-- Add Speed Slider
+Tab1:AddSlider({
+  Name = "Fly Speed",
+  Min = 1,
+  Max = 300,
+  Increase = 1,
+  Default = 1,
+  Callback = function(Value)
+    flySpeed = Value
+    print("Fly speed set to: " .. flySpeed)
+  end
+})
+
+local speedHackEnabled = false
+local jumpPowerEnabled = false
+local currentSpeed = 16
+local currentJumpPower = 50
+
+-- Function untuk mengatur speed
+local function setSpeed(value)
+    if speedHackEnabled then
+        local player = game.Players.LocalPlayer
+        if player and player.Character then
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = value
+            end
+        end
+    end
+end
+
+-- Function untuk mengatur jump power
+local function setJumpPower(value)
+    if jumpPowerEnabled then
+        local player = game.Players.LocalPlayer
+        if player and player.Character then
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.JumpPower = value
+            end
+        end
+    end
+end
+
+-- Toggle untuk Speed Hack
+local SpeedToggle = Tab1:AddToggle({
+  Name = "Speed Hack",
+  Description = "<font color='rgb(255, 0, 0)'>Use at your own risk</font>",
+  Default = false 
+})
+SpeedToggle:Callback(function(Value)
+    speedHackEnabled = Value
+    local player = game.Players.LocalPlayer
+    
+    if player and player.Character then
+        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            if Value then
+                -- Aktifkan speed hack
+                humanoid.WalkSpeed = currentSpeed
+            else
+                -- Matikan speed hack (kembali ke normal)
+                humanoid.WalkSpeed = 16
+            end
+        end
+    end
+end)
+
+-- Slider untuk mengatur kecepatan
+Tab1:AddSlider({
+  Name = "Speed Value",
+  Min = 1,
+  Max = 300,
+  Increase = 1,
+  Default = 16,
+  Callback = function(Value)
+      currentSpeed = Value
+      setSpeed(Value)
+  end
+})
+
+-- Toggle untuk Jump Power
+local JumpToggle = Tab1:AddToggle({
+  Name = "Jump Power",
+  Description = "<font color='rgb(255, 0, 0)'>Use at your own risk</font>",
+  Default = false 
+})
+JumpToggle:Callback(function(Value)
+    jumpPowerEnabled = Value
+    local player = game.Players.LocalPlayer
+    
+    if player and player.Character then
+        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            if Value then
+                -- Aktifkan high jump
+                humanoid.JumpPower = currentJumpPower
+            else
+                -- Matikan high jump (kembali ke normal)
+                humanoid.JumpPower = 50
+            end
+        end
+    end
+end)
+
+-- Slider untuk mengatur jump power
+Tab1:AddSlider({
+  Name = "Jump Power Value",
+  Min = 1,
+  Max = 300,
+  Increase = 1,
+  Default = 50,
+  Callback = function(Value)
+      currentJumpPower = Value
+      setJumpPower(Value)
+  end
+})
+
+-- Auto apply ketika karakter respawn
+game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    wait(1) -- Tunggu karakter load sempurna
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        if speedHackEnabled then
+            humanoid.WalkSpeed = currentSpeed
+        else
+            humanoid.WalkSpeed = 16
+        end
+        
+        if jumpPowerEnabled then
+            humanoid.JumpPower = currentJumpPower
+        else
+            humanoid.JumpPower = 50
+        end
+    end
+end)
+
+-- Terapkan pengaturan awal jika karakter sudah ada
+local function initializeCharacter()
+    local player = game.Players.LocalPlayer
+    if player and player.Character then
+        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            if speedHackEnabled then
+                humanoid.WalkSpeed = currentSpeed
+            end
+            if jumpPowerEnabled then
+                humanoid.JumpPower = currentJumpPower
+            end
+        end
+    end
+end
+
+-- Jalankan inisialisasi
+initializeCharacter()
+
+local Tab1 = Window:MakeTab({"Teleport", "Navigation"})
+local Section = Tab1:AddSection({"Teleport to Island"})
+
+Tab1:AddButton({"Fisherman's Island", function(Value)
+   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(94.7096329, 17.0335217, 2840.99585, 0.999071479, -2.67651057e-08, 0.0430834331, 2.5512799e-08, 1, 2.96168583e-08, -0.0430834331, -2.84901791e-08, 0.999071479)
+end})
+
+Tab1:AddButton({"Kohana", function(Value)
+   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-627.153381, 16.0354481, 609.972961, -0.999414682, -1.02123089e-07, -0.0342089944, -1.02828004e-07, 1, 1.88466736e-08, 0.0342089944, 2.23532854e-08, -0.999414682)
+end})
+
+Tab1:AddButton({"Kohana Volcano", function(Value)
+   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-590.909424, 59.0000572, 120.578873, 0.262515187, 6.44041478e-08, 0.964927852, -6.0304215e-09, 1, -6.51044232e-08, -0.964927852, 1.1271978e-08, 0.262515187)
+end})
+
+Tab1:AddButton({"Coral reefs", function(Value)
+   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-2850.92651, 47.4999962, 1994.46863, 0.98579365, -9.40621092e-08, 0.167960882, 1.01400097e-07, 1, -3.51121514e-08, -0.167960882, 5.16445873e-08, 0.98579365)
+end})
+
+Tab1:AddButton({"Esoteric Depths", function(Value)
+   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(3226.50317, -1302.85486, 1404.78162, 0.416733086, 8.51846735e-08, -0.909028888, -4.17685939e-08, 1, 7.45612354e-08, 0.909028888, 6.89672541e-09, 0.416733086)
+end})
+
+Tab1:AddButton({"Tropical Forest", function(Value)
+   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-2114.44043, 53.487236, 3757.44702, 0.865133762, 3.39234667e-08, -0.501541138, -2.5429447e-08, 1, 2.37739073e-08, 0.501541138, -7.81369547e-09, 0.865133762)
+end})
+
+Tab1:AddButton({"Crater Island", function(Value)
+   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1014.87488, 22.9479332, 5078.65918, 0.827492058, 7.7594553e-09, 0.561477423, -4.0184025e-09, 1, -7.89748533e-09, -0.561477423, 4.27886437e-09, 0.827492058)
+end})
+
+Tab1:AddButton({"Sisyphus Statue", function(Value)
+   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-3693.87695, -135.574417, -1036.93152, -0.964893997, 3.13277297e-08, 0.262639701, 4.08948182e-08, 1, 3.09604147e-08, -0.262639701, 4.06141218e-08, -0.964893997)
+end})
