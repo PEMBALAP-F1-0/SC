@@ -107,6 +107,60 @@ Tab1:AddButton({"Sell all your fish", function(Value)
 game:GetService("ReplicatedStorage"):WaitForChild("Packages"):WaitForChild("_Index"):WaitForChild("sleitnick_net@0.2.0"):WaitForChild("net"):WaitForChild("RF/SellAllItems"):InvokeServer()
 end})
 
+local Paragraph = Tab1:AddParagraph({"Read Before Using the RESET feature", "The feature below will reset your character\nBut you will return to the position you were in when you died."})
+
+Tab1:AddButton({"<font color='rgb(255, 0, 0)'>RESET</font>", function(Value)
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local HRP_CFrame_SaatIni = nil -- Variabel untuk menyimpan CFrame saat ini
+
+-- Fungsi untuk menyimpan posisi dan reset karakter
+local function ResetCharacterKePosisiSaatIni()
+    local Character = LocalPlayer.Character
+    
+    if not Character then
+        print("Karakter belum ada.")
+        return
+    end
+
+    local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+    local Humanoid = Character:FindFirstChild("Humanoid")
+
+    if HumanoidRootPart and Humanoid then
+        -- 1. Simpan posisi saat ini
+        HRP_CFrame_SaatIni = HumanoidRootPart.CFrame
+        print("Posisi saat ini disimpan:", HRP_CFrame_SaatIni)
+        
+        -- 2. Reset/Bunuh karakter
+        Humanoid.Health = 0
+        print("Karakter di-reset.")
+    else
+        print("HumanoidRootPart atau Humanoid tidak ditemukan.")
+    end
+end
+
+-- Hubungkan ke event CharacterAdded (ketika karakter baru muncul)
+LocalPlayer.CharacterAdded:Connect(function(NewCharacter)
+    local HumanoidRootPart = NewCharacter:WaitForChild("HumanoidRootPart")
+    
+    if HRP_CFrame_SaatIni then
+        -- Tunggu sebentar untuk memastikan semua skrip telah memuat karakter baru
+        task.wait(0.2) 
+
+        -- 3. Pindahkan karakter baru ke posisi yang disimpan
+        -- Menggunakan CFrame alih-alih MoveTo untuk kontrol yang lebih akurat
+        HumanoidRootPart.CFrame = HRP_CFrame_SaatIni 
+        print("Karakter baru dipindahkan ke posisi kematian sebelumnya.")
+        
+        -- Hapus CFrame yang disimpan agar tidak mempengaruhi respawn berikutnya (kecuali dari script ini)
+        HRP_CFrame_SaatIni = nil 
+    end
+end)
+
+-- Panggil fungsi untuk memulai proses reset
+ResetCharacterKePosisiSaatIni()
+end})
+
 local Tab1 = Window:MakeTab({"Player", "user"})
 local Section = Tab1:AddSection({"Player Menu"})
 
@@ -556,34 +610,62 @@ initializeCharacter()
 local Tab1 = Window:MakeTab({"Teleport", "Navigation"})
 local Section = Tab1:AddSection({"Teleport to Island"})
 
-Tab1:AddButton({"Fisherman's Island", function(Value)
-   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(94.7096329, 17.0335217, 2840.99585, 0.999071479, -2.67651057e-08, 0.0430834331, 2.5512799e-08, 1, 2.96168583e-08, -0.0430834331, -2.84901791e-08, 0.999071479)
+local teleportFunction = function()
+    print("Teleportasi siap dijalankan")
+end
+
+-- Dropdown untuk memilih opsi Teleportasi
+local Dropdown = Tab1:AddDropdown({
+  Name = "Select Teleport Location",
+  Description = "Use at Your Own <font color='rgb(255, 0, 0)'>Risk</font>",
+  Options = {"Fisherman's Island", "Kohana", "Kohana Volcano", "Coral reefs", "Esoteric Depths", "Tropical Forest", "Crater Island", "Sisyphus Statue"}, -- Hanya A dan B
+  Default = "Select Teleport Location", 
+  Flag = "teleport_pilihan",
+  Callback = function(Value)
+    -- Ketika nilai dropdown berubah, perbarui variabel teleportFunction
+    if Value == "Fisherman's Island" then
+        teleportFunction = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(94.7096329, 17.0335217, 2840.99585, 0.999071479, -2.67651057e-08, 0.0430834331, 2.5512799e-08, 1, 2.96168583e-08, -0.0430834331, -2.84901791e-08, 0.999071479)
+        end
+    elseif Value == "Kohana" then
+        teleportFunction = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-627.153381, 16.0354481, 609.972961, -0.999414682, -1.02123089e-07, -0.0342089944, -1.02828004e-07, 1, 1.88466736e-08, 0.0342089944, 2.23532854e-08, -0.999414682)
+        end
+    elseif Value == "Kohana Volcano" then
+        teleportFunction = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-590.909424, 59.0000572, 120.578873, 0.262515187, 6.44041478e-08, 0.964927852, -6.0304215e-09, 1, -6.51044232e-08, -0.964927852, 1.1271978e-08, 0.262515187)
+        end
+    elseif Value == "Coral reefs" then
+        teleportFunction = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-2850.92651, 47.4999962, 1994.46863, 0.98579365, -9.40621092e-08, 0.167960882, 1.01400097e-07, 1, -3.51121514e-08, -0.167960882, 5.16445873e-08, 0.98579365)
+        end
+    elseif Value == "Esoteric Depths" then
+        teleportFunction = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(3226.50317, -1302.85486, 1404.78162, 0.416733086, 8.51846735e-08, -0.909028888, -4.17685939e-08, 1, 7.45612354e-08, 0.909028888, 6.89672541e-09, 0.416733086)
+        end
+    elseif Value == "Tropical Forest" then
+        teleportFunction = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-2114.44043, 53.487236, 3757.44702, 0.865133762, 3.39234667e-08, -0.501541138, -2.5429447e-08, 1, 2.37739073e-08, 0.501541138, -7.81369547e-09, 0.865133762)
+        end
+    elseif Value == "Crater Island" then
+        teleportFunction = function()
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1014.87488, 22.9479332, 5078.65918, 0.827492058, 7.7594553e-09, 0.561477423, -4.0184025e-09, 1, -7.89748533e-09, -0.561477423, 4.27886437e-09, 0.827492058)
+        end
+    elseif Value == "Sisyphus Statue" then
+        teleportFunction = function()
+               game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-3693.87695, -135.574417, -1036.93152, -0.964893997, 3.13277297e-08, 0.262639701, 4.08948182e-08, 1, 3.09604147e-08, -0.262639701, 4.06141218e-08, -0.964893997)
+        end
+    end
+  end
+})
+
+-- Button yang akan menjalankan fungsi teleportasi yang saat ini tersimpan di teleportFunction
+Tab1:AddButton({"Teleport", function(Value)
+        -- Panggil fungsi yang saat ini tersimpan di variabel
+        teleportFunction()
 end})
 
-Tab1:AddButton({"Kohana", function(Value)
-   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-627.153381, 16.0354481, 609.972961, -0.999414682, -1.02123089e-07, -0.0342089944, -1.02828004e-07, 1, 1.88466736e-08, 0.0342089944, 2.23532854e-08, -0.999414682)
-end})
+local Tab1 = Window:MakeTab({"Misc", "settings"})
+local Section = Tab1:AddSection({"Section"})
 
-Tab1:AddButton({"Kohana Volcano", function(Value)
-   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-590.909424, 59.0000572, 120.578873, 0.262515187, 6.44041478e-08, 0.964927852, -6.0304215e-09, 1, -6.51044232e-08, -0.964927852, 1.1271978e-08, 0.262515187)
-end})
-
-Tab1:AddButton({"Coral reefs", function(Value)
-   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-2850.92651, 47.4999962, 1994.46863, 0.98579365, -9.40621092e-08, 0.167960882, 1.01400097e-07, 1, -3.51121514e-08, -0.167960882, 5.16445873e-08, 0.98579365)
-end})
-
-Tab1:AddButton({"Esoteric Depths", function(Value)
-   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(3226.50317, -1302.85486, 1404.78162, 0.416733086, 8.51846735e-08, -0.909028888, -4.17685939e-08, 1, 7.45612354e-08, 0.909028888, 6.89672541e-09, 0.416733086)
-end})
-
-Tab1:AddButton({"Tropical Forest", function(Value)
-   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-2114.44043, 53.487236, 3757.44702, 0.865133762, 3.39234667e-08, -0.501541138, -2.5429447e-08, 1, 2.37739073e-08, 0.501541138, -7.81369547e-09, 0.865133762)
-end})
-
-Tab1:AddButton({"Crater Island", function(Value)
-   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(1014.87488, 22.9479332, 5078.65918, 0.827492058, 7.7594553e-09, 0.561477423, -4.0184025e-09, 1, -7.89748533e-09, -0.561477423, 4.27886437e-09, 0.827492058)
-end})
-
-Tab1:AddButton({"Sisyphus Statue", function(Value)
-   game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-3693.87695, -135.574417, -1036.93152, -0.964893997, 3.13277297e-08, 0.262639701, 4.08948182e-08, 1, 3.09604147e-08, -0.262639701, 4.06141218e-08, -0.964893997)
-end})
+local Section = Tab1:AddSection({"Coming Soon"})
