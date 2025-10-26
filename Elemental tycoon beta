@@ -1,0 +1,247 @@
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+WindUI:AddTheme({
+    Name = "My Theme", -- theme name
+    
+    Accent = Color3.fromHex("#18181b"),
+    Dialog = Color3.fromHex("#161616"),
+    Outline = Color3.fromHex("#FFFFFF"),
+    Text = Color3.fromHex("#FFFFFF"),
+    Placeholder = Color3.fromHex("#7a7a7a"),
+    Background = Color3.fromHex("#101010"),
+    Button = Color3.fromHex("#52525b"),
+    Icon = Color3.fromHex("#a1a1aa")
+})
+
+WindUI:SetTheme("My Theme")
+
+
+local Window = WindUI:CreateWindow({
+    Title = "Elemental Powers Tycoon",
+    Icon = "door-open", -- lucide icon. optional
+    Author = "By Miee", -- optional
+})
+
+local Dialog = Window:Dialog({
+    Icon = "bird",
+    Title = "Warning!",
+    Content = "Use at your own Risk",
+    Buttons = {
+        {
+            Title = "Confirm",
+            Callback = function()
+                print("Confirmed!")
+            end,
+        },
+    },
+})
+
+Window:Tag({
+    Title = "Premium Version",
+    Color = Color3.fromHex("#30ff6a"),
+    Radius = 13, -- from 0 to 13
+})
+
+local Tab = Window:Tab({ --Menu/Tab skill
+    Title = "Skill",
+    Icon = "bird", 
+    Locked = false,
+})
+
+local Powers = {
+	["Lava"] = {  --Nama kekuatan
+			[1] = "Lava Katana",
+			[2] = "Lava Ball",
+			[3] = "Magam Fists",
+			[4] = "Lava Dash",
+			[5] = "Volcano Sentry",
+			[6] = "Magma Spikes",
+			[7] = "Nibiru"
+		},
+		["Bone"] = {  --Nama kekuatan
+			[1] = "Bone Scythe",
+			[2] = "Blaster",
+			[3] = "Bones Barrage",
+			[4] = "Flying Bone",
+			[5] = "Bone Surge",
+			[6] = "Twin Blasters",
+			[7] = "Judgement Blast"
+		},
+		["Darkness"] = {  --Nama kekuatan
+			[1] = "Shadow Sword",
+			[2] = "Unseen Hands",
+			[3] = "Unseen Barrage",
+			[4] = "Dark Duo",
+			[5] = "Abyss",
+			[6] = "Dark Hold",
+			[7] = "Dark Arc"
+		},
+		["Light"] = {  --Nama kekuatan
+			[1] = "Light Saber",
+			[2] = "Light Ball",
+			[3] = "Light Orbs",
+			[4] = "Blinding Light",
+			[5] = "Shooting Star",
+			[6] = "Light Speed",
+			[7] = "Light Beam"
+		},
+		["Nature"] = {  --Nama kekuatan
+			[1] = "Christmas Tree Sword",
+			[2] = "Plantoid",
+			[3] = "Spore Bombs",
+			[4] = "Nature's Blessing",
+			[5] = "Nuclear Spore",
+			[6] = "Pine Burst",
+			[7] = "Nature's Wrath"
+		},
+		["Ice"] = {  --Nama kekuatan
+			[1] = "Frost Staff",
+			[2] = "Frost Fire Ball",
+			[3] = "Ice Disk",
+			[4] = "Frost Fire Ball",
+			[5] = "Snow Ball",
+			[6] = "Ultracold Aura",
+			[7] = "Ice Spikes"
+		},
+		["Thunder"] = {  --Nama kekuatan
+			[1] = "Thunder Staff",
+			[2] = "Bolt",
+			[3] = "Barrage",
+			[4] = "Discharge",
+			[5] = "Flying Nimbus",
+			[6] = "Lighting Strike",
+			[7] = "Storm"
+		},
+		["Earth"] = {  --Nama kekuatan
+			[1] = "Tectonic Hamer",
+			[2] = "Stone Throw",
+			[3] = "Rocks Barrage",
+			[4] = "Large Boulder",
+			[5] = "Burrow",
+			[6] = "Stone Henge",
+			[7] = "Earth Spikes"
+		},
+		["Fire"] = {  --Nama kekuatan
+			[1] = "Fire Sword",
+			[2] = "Fire Ball",
+			[3] = "Fire Fly",
+			[4] = "Fire Bomb",
+			[5] = "Comet",
+			[6] = "Combust",
+			[7] = "Fire Shower"
+		},
+		["Technology"] = {  --Nama kekuatan
+			[1] = "Hyper Sword",
+			[2] = "Phonton Blast",
+			[3] = "Twin-Photon Blash",
+			[4] = "Tesla Turret",
+			[5] = "Orbital",
+			[6] = "Tesseract",
+			[7] = "Hyper Slash"
+		},
+		["Gravity"] = {  --Nama kekuatan
+			[1] = "Gravity Katana",
+			[2] = "Heavy Infliction",
+			[3] = "Tectonic Barrage",
+			[4] = "Gravity Orb",
+			[5] = "Tectonic Burst",
+			[6] = "Zero Gravity",
+			[7] = "Gravity Globe"
+		},
+		["Time"] = {  --Nama kekuatan
+			[1] = "Time Scepter",
+			[2] = "Temporal Gate",
+			[3] = "Warp Barrage",
+			[4] = "Tempo Beam",
+			[5] = "Time Trap",
+			[6] = "Warp Bomb",
+			[7] = "Grand Clock"
+		},
+		["Crystal"] = {  --Nama kekuatan
+			[1] = "Crystal Cleaver",
+			[2] = "Crystal Mine",
+			[3] = "Energy Crash",
+			[4] = "Energy Crown",
+			[5] = "Crystal Eruption",
+			[6] = "Energy Crystal",
+			[7] = "Crystal Surge"
+		},
+		["Venom"] = {  --Nama kekuatan
+			[1] = "Venom Blade",
+			[2] = "Poison Bullet",
+			[3] = "Acid Rain",
+			[4] = "Venom Stream",
+			[5] = "Hardened Venom",
+			[6] = "Poison Demon",
+			[7] = "Bubbling Venom"
+		},
+		["Devil"] = {  --Nama kekuatan
+			[1] = "Devil Sword",
+			[2] = "Evil Bullet",
+			[3] = "Fangs Barrage",
+			[4] = "Evil Flash",
+			[5] = "Demon Orb",
+			[6] = "Demon Lock",
+			[7] = "Dark Tsunami"
+		},
+		["Space"] = {  --Nama kekuatan
+			[1] = "Space Gun",
+			[2] = "Blackhole Orb",
+			[3] = "Moon Splitter",
+			[4] = "Asteroid Belt",
+			[5] = "Meteor Jam",
+			[6] = "Cosmic Remote",
+			[7] = "Space Saucer"
+		};
+        ["Super Sonic"] = {  --Nama kekuatan
+            [1]="Sonic Blaster";
+            [2]="Sonic Barrage";
+            [3]="Sonic Twister";
+            [4]="Rebound Blast";
+            [5]="Rebound Teleport";
+            [6]="Sonic Boom";
+            [7]="Sonic Blaster";
+        };
+        ["Rebirth"] = {  --Nama kekuatan
+            [1]="Dark Flames";
+            [2]="Draedron's Tech";
+            [3]="Yoru";
+            [4]="Plasma Orbs";
+            [5]="Red Saucer";
+            [6]="Undead Staff";
+        };
+	}
+
+local GAME_ID = 10253248401 -- ID game yang ditargetkan
+
+-- Loop melalui setiap kekuatan elemental
+for powerName, skills in pairs(Powers) do
+    -- Membuat Section untuk nama kekuatan (misalnya: "Lava", "Bone")
+    Tab:Section({ 
+        Title = powerName, 
+    })
+
+    -- Loop melalui setiap skill dalam kekuatan tersebut
+    for _, skillName in pairs(skills) do
+        -- Membuat Button untuk setiap skill
+        Tab:Button({ 
+            Title = skillName, 
+            Desc = "Click to equip the '" .. skillName .. "' skill.", -- Deskripsi yang lebih jelas
+            Locked = false,
+            Callback = function()
+                -- Logika untuk mendapatkan/meng-equip skill
+                if game.PlaceId == GAME_ID then
+                    local args = {
+                        [1] = "equip_mystery_spell", -- Nama event remote yang Anda gunakan
+                        [2] = skillName
+                    }
+                    game:GetService("ReplicatedStorage").RemoteEvent:FireServer(unpack(args))
+                    -- Opsional: Tambahkan notifikasi WindUI setelah klik
+                    WindUI:Notify({ Title = "Skill Acquired!", Content = skillName .. " has been equipped.", Icon = "check", Duration = 3 })
+                else
+                    WindUI:Notify({ Title = "Error", Content = "Incorrect game ID. Expected: " .. GAME_ID, Icon = "x", Duration = 5 })
+                end
+            end
+        })
+    end
+end
