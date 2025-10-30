@@ -1,5 +1,19 @@
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
+local Player = game.Players.LocalPlayer
+-- Amankan Humanoid dengan menunggu Character dimuat
+local Character = Player.Character or Player.CharacterAdded:Wait() 
+local Humanoid = Character:WaitForChild("Humanoid")
+
+-- Nilai Default untuk reset
+local DefaultWalkSpeed = Humanoid.WalkSpeed
+local DefaultJumpPower = Humanoid.JumpPower
+
+-- Nilai yang diatur oleh Slider
+local CurrentSpeedValue = DefaultWalkSpeed 
+local CurrentJumpValue = DefaultJumpPower 
+local InfiniteJump = false
+
 WindUI:AddTheme({
     Name = "My Theme", -- theme name
     
@@ -23,7 +37,7 @@ local Window = WindUI:CreateWindow({
 })
 
 local Dialog = Window:Dialog({
-    Icon = "bird",
+    Icon = "Home",
     Title = "Warning!",
     Content = "Use at your own Risk",
     Buttons = {
@@ -42,9 +56,9 @@ Window:Tag({
     Radius = 13, -- from 0 to 13
 })
 
-local Tab = Window:Tab({ --Menu/Tab skill
-    Title = "Skill",
-    Icon = "bird", 
+local TabSkills = Window:Tab({ --Menu/Tab skill
+    Title = "Skill Elemental",
+    Icon = "menu", 
     Locked = false,
 })
 
@@ -57,6 +71,10 @@ local Powers = {
 			[5] = "Volcano Sentry",
 			[6] = "Magma Spikes",
 			[7] = "Nibiru"
+		},
+		["Gamepass"] = {  --Nama kekuatan
+			[1] = "Cruel Sun",
+            [2] = "Rocket Launcher"
 		},
 		["Bone"] = {  --Nama kekuatan
 			[1] = "Bone Scythe",
@@ -217,14 +235,14 @@ local GAME_ID = 10253248401 -- ID game yang ditargetkan
 -- Loop melalui setiap kekuatan elemental
 for powerName, skills in pairs(Powers) do
     -- Membuat Section untuk nama kekuatan (misalnya: "Lava", "Bone")
-    Tab:Section({ 
+    TabSkills:Section({ -- Menggunakan TabSkills
         Title = powerName, 
     })
 
     -- Loop melalui setiap skill dalam kekuatan tersebut
     for _, skillName in pairs(skills) do
         -- Membuat Button untuk setiap skill
-        Tab:Button({ 
+        TabSkills:Button({ -- Menggunakan TabSkills
             Title = skillName, 
             Desc = "Click to equip the '" .. skillName .. "' skill.", -- Deskripsi yang lebih jelas
             Locked = false,
@@ -245,3 +263,378 @@ for powerName, skills in pairs(Powers) do
         })
     end
 end
+
+local TabPlayer = Window:Tab({ -- Mengganti nama variabel menjadi TabPlayer
+    Title = "Player",
+    Icon = "user", -- Ganti icon ke yang lebih relevan
+    Locked = false,
+})
+
+local Section = TabPlayer:Section({ 
+    Title = "Local Player Menu",
+})
+
+local SpeedSlider = TabPlayer:Slider({ -- Menggunakan TabPlayer
+    Title = "Speed Multiplier",
+    Desc = "(Default: " .. DefaultWalkSpeed .. ")",
+    
+    Step = 1,
+    Value = {
+        Min = 16, -- Kecepatan standar
+        Max = 100, -- Batas maksimum yang wajar
+        Default = DefaultWalkSpeed,
+    },
+    Callback = function(value)
+        CurrentSpeedValue = value
+        -- Hanya terapkan jika Speed Hack diaktifkan
+        if SpeedToggle.Value then
+            Humanoid.WalkSpeed = value
+        end
+        print("Speed Slider Value: " .. value)
+    end
+})
+
+local SpeedToggle = TabPlayer:Toggle({ -- Menggunakan TabPlayer
+    Title = "Enable Speed Hack",
+    Icon = "chevrons-right",
+    Type = "Checkbox",
+    Value = false, -- default value
+    Callback = function(state) 
+        if state then
+            -- Aktifkan: terapkan nilai dari slider
+            Humanoid.WalkSpeed = CurrentSpeedValue
+            print("Speed Hack Activated. Speed set to: " .. CurrentSpeedValue)
+        else
+            -- Nonaktifkan: kembalikan ke kecepatan default
+            Humanoid.WalkSpeed = DefaultWalkSpeed
+            print("Speed Hack Deactivated. Speed reset to: " .. DefaultWalkSpeed)
+        end
+    end
+})
+
+local JumpSlider = TabPlayer:Slider({ -- Menggunakan TabPlayer
+    Title = "Jump Power",
+    Desc = "(Default: " .. DefaultJumpPower .. ")",
+    
+    Step = 5, -- Langkah yang lebih besar untuk Jump Power
+    Value = {
+        Min = 50, -- Jump Power standar
+        Max = 500, -- Batas maksimum yang wajar
+        Default = DefaultJumpPower,
+    },
+    Callback = function(value)
+        CurrentJumpValue = value
+        -- Hanya terapkan jika Jump Power Hack diaktifkan
+        if JumpToggle.Value then
+            Humanoid.JumpPower = value
+        end
+        print("Jump Power Slider Value: " .. value)
+    end
+})
+
+local JumpToggle = TabPlayer:Toggle({ -- Menggunakan TabPlayer
+    Title = "Enable Jump Power Hack",
+    Icon = "arrow-up",
+    Type = "Checkbox",
+    Value = false, -- default value
+    Callback = function(state) 
+        if state then
+            -- Aktifkan: terapkan nilai dari slider
+            Humanoid.JumpPower = CurrentJumpValue
+            print("Jump Power Hack Activated. Jump Power set to: " .. CurrentJumpValue)
+        else
+            -- Nonaktifkan: kembalikan ke Jump Power default
+            Humanoid.JumpPower = DefaultJumpPower
+            print("Jump Power Hack Deactivated. Jump Power reset to: " .. DefaultJumpPower)
+        end
+    end
+})
+
+Player.CharacterAdded:Connect(function(newCharacter)
+    Character = newCharacter
+    Humanoid = newCharacter:WaitForChild("Humanoid")
+    
+    -- Terapkan kembali kecepatan jika Speed Hack aktif
+    if SpeedToggle.Value then
+        Humanoid.WalkSpeed = CurrentSpeedValue
+    else
+        -- Jika tidak aktif, pastikan menggunakan nilai default yang benar
+        Humanoid.WalkSpeed = DefaultWalkSpeed
+    end
+    
+    -- Terapkan kembali Jump Power jika Jump Hack aktif
+    if JumpToggle.Value then
+        Humanoid.JumpPower = CurrentJumpValue
+    else
+        -- Jika tidak aktif, pastikan menggunakan nilai default yang benar
+        Humanoid.JumpPower = DefaultJumpPower
+    end
+end)
+
+local InfiniteJumpToggle = TabPlayer:Toggle({ -- Mengganti nama variabel agar tidak bentrok
+    Title = "Infinite Jump",
+    Desc = "Use at your own risk",
+    Icon = "arrow-up",
+    Type = "Checkbox",
+    Value = false, -- default value
+    Callback = function(state) 
+        InfiniteJump = state 
+        if InfiniteJump then
+            local UserInputService = game:GetService("UserInputService")
+            local Players = game:GetService("Players")
+            local player = Players.LocalPlayer
+            local humanoid
+            
+            -- Fungsi utama infinite jump
+            local function onJumpRequest()
+                if humanoid then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end
+            
+            -- Saat karakter spawn
+            local function onCharacterAdded(character)
+                humanoid = character:WaitForChild("Humanoid")
+                UserInputService.JumpRequest:Connect(onJumpRequest)
+                print("[Infinite Jump] Aktif ✅")
+            end
+            
+            if player.Character then
+                onCharacterAdded(player.Character)
+            end
+            
+            player.CharacterAdded:Connect(onCharacterAdded)
+        else
+            local UserInputService = game:GetService("UserInputService")
+            
+            for _, conn in pairs(getconnections(UserInputService.JumpRequest)) do
+                conn:Disconnect()
+            end
+            
+            print("[Infinite Jump] Dinonaktifkan ❌")
+        end
+    end
+}) -- <<< 'end' DITEMPATKAN DI SINI UNTUK MENUTUP TOGGLE INFINITE JUMP DENGAN BENAR
+
+-- >>>>>>>>>>>>>>>>>>>>>> KODE VIEW PLAYER MENU DIMULAI DI SINI (DIPINDAHKAN KELUAR DARI CALLBACK) <<<<<<<<<<<<<<<<<<<<<<<<
+
+local SectionView = TabPlayer:Section({ -- Mengganti nama variabel Section agar tidak bentrok
+    Title = "View Player Menu",
+})
+
+-- Definisi variabel untuk View Player
+local Players = game:GetService("Players") 
+local LocalPlayer = game.Players.LocalPlayer 
+local PlayerDropdown 
+local ViewPlayerToggleState = false
+local CurrentSelectedPlayerName = nil
+local OriginalCameraType = nil
+local Camera = workspace.CurrentCamera
+
+--- Fungsi untuk mengambil daftar nama pemain (EKSKLUSIF pemain lokal) ---
+local function getPlayerNames()
+    local names = {}
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then 
+            table.insert(names, player.Name)
+        end
+    end
+    return names
+end
+
+--- Fungsi untuk logika 'view player' third-person ---
+local function viewPlayer(player)
+    if not player or not ViewPlayerToggleState or player == LocalPlayer then
+        return
+    end
+
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    if character and Camera then
+        if not OriginalCameraType then
+            OriginalCameraType = Camera.CameraType
+        end
+        
+        -- Mengatur kamera untuk mengikuti karakter pemain (Third-Person)
+        Camera.CameraSubject = character.Humanoid
+        Camera.CameraType = Enum.CameraType.Follow 
+    end
+end
+
+--- Fungsi untuk menghentikan 'view player' dan kembali ke pemain lokal ---
+local function stopView()
+    if Camera then
+        Camera.CameraType = OriginalCameraType or Enum.CameraType.Custom
+        
+        local localHumanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+        if localHumanoid then
+             -- Kembali ke subjek kamera pemain lokal
+             Camera.CameraSubject = localHumanoid
+        end
+        
+        OriginalCameraType = nil
+    end
+end
+
+--- Fungsi untuk memperbarui nilai Dropdown menggunakan Refresh() ---
+local function refreshPlayerDropdown()
+    local playerNames = getPlayerNames()
+    local dropDownValues = #playerNames > 0 and playerNames or { "No Other Players" }
+    local newSelected = nil
+    
+    -- Tentukan nilai yang harus dipilih/ditampilkan setelah refresh
+    if CurrentSelectedPlayerName and table.find(playerNames, CurrentSelectedPlayerName) then
+        newSelected = CurrentSelectedPlayerName
+    elseif #playerNames > 0 then
+        newSelected = playerNames[1] 
+    else
+        newSelected = "No Other Players"
+    end
+    
+    if PlayerDropdown and PlayerDropdown.Refresh then
+        PlayerDropdown:Refresh(dropDownValues)
+        
+        -- Mengatur nilai terpilih secara eksplisit jika ada pemain
+        if newSelected ~= "No Other Players" then
+             if PlayerDropdown.Set then
+                PlayerDropdown:Set(newSelected) 
+             else
+                PlayerDropdown.Value = newSelected
+             end
+        end
+    end
+    
+    CurrentSelectedPlayerName = newSelected
+    
+    -- Lanjutkan view jika toggle aktif
+    if ViewPlayerToggleState then
+        local player = Players:FindFirstChild(CurrentSelectedPlayerName)
+        if player and player ~= LocalPlayer then
+            viewPlayer(player)
+        else
+            stopView()
+        end
+    end
+
+    print("Dropdown refreshed. Selected: " .. CurrentSelectedPlayerName)
+end
+
+-- Panggil refresh awal untuk mengisi nilai dan mengatur nilai default
+refreshPlayerDropdown()
+
+--- UI Components ---
+
+PlayerDropdown = TabPlayer:Dropdown({ -- Variabel TabPlayer sudah benar
+    Title = "Select Player to View",
+    Desc = "Use at your own risk",
+    Values = getPlayerNames(), 
+    Value = CurrentSelectedPlayerName, 
+    Callback = function(option) 
+        CurrentSelectedPlayerName = option
+        print("Player selected: " .. option)
+        local player = Players:FindFirstChild(CurrentSelectedPlayerName)
+        if player and ViewPlayerToggleState then
+            viewPlayer(player)
+        end
+    end
+})
+
+local ViewPlayerToggle = TabPlayer:Toggle({ -- Mengganti nama variabel agar tidak bentrok dengan Toggle Infinite Jump
+    Title = "Activate Third-Person View",
+    Desc = "Use at your own risk",
+    Icon = "eye",
+    Type = "Checkbox",
+    Value = false, 
+    Callback = function(state) 
+        ViewPlayerToggleState = state
+        print("Toggle Activated: " .. tostring(state))
+        
+        if state then
+            local player = Players:FindFirstChild(CurrentSelectedPlayerName)
+            if player and player ~= LocalPlayer then
+                viewPlayer(player)
+            end
+        else
+            stopView()
+        end
+    end
+})
+
+--- Koneksi Event untuk Auto-Refresh Dropdown ---
+Players.PlayerAdded:Connect(refreshPlayerDropdown)
+Players.PlayerRemoving:Connect(function(player)
+    if player.Name == CurrentSelectedPlayerName and ViewPlayerToggleState then
+        stopView()
+    end
+    refreshPlayerDropdown()
+end)
+
+--- Koneksi Event untuk memastikan kamera kembali ke pemain lokal saat karakter di-reset ---
+LocalPlayer.CharacterAdded:Connect(function(character)
+    if not ViewPlayerToggleState then
+        if Camera.CameraSubject ~= character.Humanoid then
+            Camera.CameraSubject = character.Humanoid
+            Camera.CameraType = OriginalCameraType or Enum.CameraType.Custom
+        end
+    end
+end)
+
+local TabEsp = Window:Tab({
+    Title = "ESP",
+    Icon = "bird", -- optional
+    Locked = false,
+})
+
+local Toggle = TabEsp:Toggle({
+    Title = "ESP Name | Health | Distance",
+    Desc = "BUG",
+    Icon = "bird",
+    Type = "Checkbox",
+    Locked = true,
+    Value = false, -- default value
+    Callback = function(state) 
+        print("Toggle Activated" .. tostring(state))
+    end
+})
+
+local Toggle = TabEsp:Toggle({
+    Title = "Line",
+    Desc = "Use at your own risk",
+    Icon = "bird",
+    Type = "Checkbox",
+    Locked = true,
+    Value = false, -- default value
+    Callback = function(state) 
+        print("Toggle Activated" .. tostring(state))
+    end
+})
+
+local Toggle = TabEsp:Toggle({
+    Title = "BOX",
+    Desc = "Use at your own risk",
+    Icon = "bird",
+    Type = "Checkbox",
+    Locked = true,
+    Value = false, -- default value
+    Callback = function(state) 
+        print("Toggle Activated" .. tostring(state))
+    end
+})
+
+local Toggle = TabEsp:Toggle({
+    Title = "HighLight",
+    Desc = "Use at your own risk",
+    Icon = "bird",
+    Type = "Checkbox",
+    Locked = true,
+    Value = false, -- default value
+    Callback = function(state) 
+        print("Toggle Activated" .. tostring(state))
+    end
+})
+
+local MiscTab = Window:Tab({
+    Title = "Misc",
+    Icon = "bird", -- optional
+    Locked = true,
+})
